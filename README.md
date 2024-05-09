@@ -1,30 +1,57 @@
-# React + TypeScript + Vite
+## Getting Started
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Follow the steps below to set up and run the project on your local machine:
 
-Currently, two official plugins are available:
+1. **Clone the repository:**
+   ```bash
+   git clone [repository-url]
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+2. **Navigate to the project directory:**
+   ```bash
+   cd [project-directory]
 
-## Expanding the ESLint configuration
+3. **Install dependencies:**
+   ```bash
+   npm install
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+4. **Run the application:**
+   ```bash
+   npm start
 
-- Configure the top-level `parserOptions` property like this:
+## Branching and Release Strategy
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+### Git-flow Guidelines
+- Follow the standard Git-flow for development.
+- **Do not commit directly to the main branch.**
+- Always create feature branches for new development.
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+### Feature Branch Naming Convention
+- Feature branches should follow the format: `<name>/<brief-description>`.
+  For example: `rushi/create-docker-files`.
+
+### Commit Guidelines
+- Commits should be relevant to the task you are working on.
+  For example: "Created Dockerfile for containerization".
+
+### Release Branching
+- Release branches should be created from the main branch in this format: `release/vX.X`.
+  For example: `release/v1.0`.
+
+### Release Versioning and Tagging
+- Release versions should be created from the release branch with tags in this format: `vX.X.X`.
+  For example: `v1.0.0`.
+
+### Hotfix Strategy
+- If there are hotfixes for a particular release, commit to the release branch.
+- Cherry-pick the hotfix commit to the main branch.
+- Create a new release and tag from the release branch in this format: `vX.X.X`.
+  For example: `v1.0.1`.
+
+## Pull Request Strategy
+
+- **Do not commit directly to the main branch.**
+- Create feature branches for all development.
+- When creating a Pull Request, add just a Brief Description in title.
+  For example: `Create Docker File`.
+- A Pull Request should be reviewed by at least one individual before merging into the main branch.
+
