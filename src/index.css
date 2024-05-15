@@ -1,4 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-  
+
+* {
+  font-family: 'Nunito';
+}
+
+@layer base {
+  :root {
+    --background: 263.4 15% 95%;
+    --foreground: 263.4 5% 0%;
+    --card: 263.4 15% 90%;
+    --card-foreground: 263.4 5% 10%;
+    --popover: 263.4 15% 95%;
+    --popover-foreground: 263.4 95% 0%;
+    --primary: 263.4 70% 50.4%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 263.4 15% 70%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 225.39999999999998 15% 85%;
+    --muted-foreground: 263.4 5% 35%;
+    --accent: 225.39999999999998 15% 80%;
+    --accent-foreground: 263.4 5% 10%;
+    --destructive: 0 50% 30%;
+    --destructive-foreground: 263.4 5% 90%;
+    --border: 263.4 20% 50%;
+    --input: 263.4 20% 18%;
+    --ring: 263.4 70% 50.4%;
+    --radius: 0.75rem;
+  }
+  .dark {
+    --background: 263.4 15% 5%;
+    --foreground: 263.4 5% 90%;
+    --card: 263.4 15% 0%;
+    --card-foreground: 263.4 5% 90%;
+    --popover: 263.4 15% 5%;
+    --popover-foreground: 263.4 5% 90%;
+    --primary: 263.4 70% 50.4%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 263.4 15% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 225.39999999999998 15% 15%;
+    --muted-foreground: 263.4 5% 60%;
+    --accent: 225.39999999999998 15% 15%;
+    --accent-foreground: 263.4 5% 90%;
+    --destructive: 0 50% 30%;
+    --destructive-foreground: 263.4 5% 90%;
+    --border: 263.4 20% 18%;
+    --input: 263.4 20% 18%;
+    --ring: 263.4 70% 50.4%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
