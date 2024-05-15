@@ -1,10 +1,13 @@
-import { TooltipProvider } from "@radix-ui/react-tooltip";
-import { ThemeProvider } from "./components/theme-provider";
+import { TooltipProvider } from '@radix-ui/react-tooltip';
+import { ThemeProvider } from './components/theme-provider';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <TooltipProvider>{children}</TooltipProvider>
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <TooltipProvider>{children}</TooltipProvider>
+      </GoogleOAuthProvider>
     </ThemeProvider>
   );
 };

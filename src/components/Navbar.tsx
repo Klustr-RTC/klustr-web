@@ -2,28 +2,38 @@ import { Home, LogOut, Package2, PanelLeft, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { ModeToggle } from './mode-toggle';
 import { webRoutes } from '@/constants/routes';
+import { toast } from 'sonner';
+
+const routes = [
+  {
+    path: webRoutes.home,
+    name: 'Home',
+    icon: <Home className="h-5 w-5" />
+  },
+  {
+    path: '#',
+    name: 'Profile',
+    icon: <User className="h-5 w-5" />
+  },
+  {
+    path: '/room/create',
+    name: 'Create Room',
+    icon: <Plus className="h-5 w-5" />
+  }
+];
 
 export function Navbar() {
-  const routes = [
-    {
-      path: webRoutes.home,
-      name: 'Home',
-      icon: <Home className="h-5 w-5" />
-    },
-    {
-      path: '#',
-      name: 'Profile',
-      icon: <User className="h-5 w-5" />
-    },
-    {
-      path: '/room/create',
-      name: 'Create Room',
-      icon: <Plus className="h-5 w-5" />
-    }
-  ];
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    toast.success('Logout successful');
+    navigate(webRoutes.auth.login);
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -54,13 +64,13 @@ export function Navbar() {
           <ModeToggle />
           <Tooltip>
             <TooltipTrigger asChild>
-              <Link
-                to="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+              <div
+                onClick={logout}
+                className="flex cursor-pointer h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
                 <LogOut className="h-5 w-5" />
                 <span className="sr-only">Logout</span>
-              </Link>
+              </div>
             </TooltipTrigger>
             <TooltipContent side="right">Logout</TooltipContent>
           </Tooltip>
@@ -94,13 +104,13 @@ export function Navbar() {
                     {route.name}
                   </Link>
                 ))}
-                <Link
-                  to={'#'}
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                <div
+                  onClick={logout}
+                  className="flex cursor-pointer items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <LogOut className="h-5 w-5" />
                   Logout
-                </Link>
+                </div>
               </nav>
             </SheetContent>
           </Sheet>

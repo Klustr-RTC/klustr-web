@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import axios from "axios";
-import { toast } from "sonner";
+import axios from 'axios';
+import { toast } from 'sonner';
 
 export const errorHandler = <T extends any[], R>(
   func: (...args: T) => Promise<R>
@@ -12,13 +12,12 @@ export const errorHandler = <T extends any[], R>(
       if (axios.isAxiosError(error)) {
         // For Development
         console.log(error.response?.data);
-        if (error.status == 400) {
-          toast.error(error.response?.data.detail);
-          error.response?.data.errors.forEach((error: any) => {
-            toast.error(error.errorMessage);
+        if (typeof error.response?.data == 'string') {
+          toast.error(error.response.data);
+        } else if (error.response?.data.errors) {
+          Object.keys(error.response.data.errors).forEach(key => {
+            toast.error(error.response?.data.errors[key]);
           });
-        } else {
-          toast.error(error.response?.data.detail);
         }
       } else {
         toast.error((error as Error).message);
