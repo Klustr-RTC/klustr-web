@@ -25,10 +25,39 @@ export function Login() {
   });
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const googleLogin = useGoogleLogin({
-    onSuccess: tokenResponse => console.log(tokenResponse)
+    onSuccess: async tokenResponse => {
+      setGoogleLoading(true);
+      const res = await AuthService.getUserInfoFromAccessToken(tokenResponse.access_token);
+      if (res) {
+        const user = await AuthService.getUserByEmail(res.email);
+        if (user) {
+          await login(tokenResponse.access_token, user.username);
+        } else {
+          toast.error('User not found! Please register first');
+          navigate(webRoutes.auth.register);
+        }
+      } else {
+        toast.error('Token Expired! Please try again');
+      }
+
+      setGoogleLoading(false);
+    }
   });
+
+  const login = async (access_token: string, username: string) => {
+    const res = await AuthService.googleAuth({
+      GoogleAccessToken: access_token,
+      Username: username
+    });
+    if (res) {
+      localStorage.setItem('token', res.token);
+      toast.success('Login successful');
+      navigate(webRoutes.home);
+    }
+  };
 
   const onSubmit = async () => {
     try {
@@ -98,11 +127,16 @@ export function Login() {
                 required
               />
             </div>
-            <CustomButton isLoading={loading} type="submit">
+            <CustomButton loading={loading} type="submit">
               Login
             </CustomButton>
-            <CustomButton variant="outline" onClick={() => googleLogin()} className="w-full">
-              <GoogleIcon /> Login with Google
+            <CustomButton
+              loading={googleLoading}
+              variant="outline"
+              onClick={() => googleLogin()}
+              className="w-full"
+            >
+              {!googleLoading && <GoogleIcon />} Login with Google
             </CustomButton>
           </form>
           <div className="mt-4 text-center text-sm">

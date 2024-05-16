@@ -10,9 +10,12 @@ export type RegisterSchema = {
 };
 
 export type GoogleAuthSchema = {
-  Email: string;
   Username: string;
-  GoogleId: string;
   GoogleAccessToken: string;
-  GoogleRefreshToken: string;
+};
+
+export type User = {
+  email: string;
+  username: string;
+  id: string;
 };
