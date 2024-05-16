@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
+
 const schema = z.object({
   Username: z
     .string()
@@ -90,6 +91,7 @@ export function Register() {
     await register(accessToken, data.Username);
     setLoading(false);
   };
+
 
   const onSubmit = async () => {
     try {
