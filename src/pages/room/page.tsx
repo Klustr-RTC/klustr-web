@@ -1,3 +1,6 @@
+import { useParams } from 'react-router-dom';
+
 export const RoomPage = () => {
-  return <div>RoomPage</div>;
+  const { id } = useParams();
+  return <div>RoomPage : {id}</div>;
 };
