@@ -1,8 +1,10 @@
-import { jwtDecode } from "jwt-decode";
+import { AuthPayload } from '@/types/auth';
+import { jwtDecode } from 'jwt-decode';
 
-export const decodeToken = async (token: string) => {
+export const decodeToken = (token: string) => {
   try {
-    jwtDecode(token);
+    const payload: AuthPayload = jwtDecode(token);
+    return payload;
   } catch (error) {
     console.log(error);
   }
