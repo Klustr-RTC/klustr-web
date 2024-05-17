@@ -75,7 +75,7 @@ export function Register() {
     });
     if (res) {
       localStorage.setItem('token', res.token);
-      toast.success('Register successful');
+      toast.success('Registration successful');
       navigate(webRoutes.home);
     }
   };
