@@ -11,13 +11,15 @@ export const errorHandler = <T extends any[], R>(
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // For Development
-        console.log(error.response?.data);
+        console.log(error);
         if (typeof error.response?.data == 'string') {
           toast.error(error.response.data);
         } else if (error.response?.data.errors) {
           Object.keys(error.response.data.errors).forEach(key => {
             toast.error(error.response?.data.errors[key]);
           });
+        } else {
+          toast.error('Something went wrong');
         }
       } else {
         toast.error((error as Error).message);

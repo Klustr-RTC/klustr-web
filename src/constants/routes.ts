@@ -25,24 +25,26 @@ export const apiRoutes = {
     update: (roomId: string) => `room/${roomId}`,
     getByJoinCode: (joinCode: string) => `room/GetRoomByJoinCode/${joinCode}`,
     getById: (roomId: string) => `room/GetRoomById/${roomId}`,
-    getAll: (query: RoomQueryObject) => {
+    getAll: (query?: RoomQueryObject) => {
       let queryStr = '?';
-      if (query.name) {
+      if (query?.name) {
         queryStr += `name=${query.name}&`;
       }
-      if (query.description) {
+      if (query?.description) {
         queryStr += `description=${query.description}&`;
       }
-      if (query.minMembers) {
+      if (query?.minMembers) {
         queryStr += `minMembers=${query.minMembers}&`;
       }
-      if (query.maxMembers) {
+      if (query?.maxMembers) {
         queryStr += `maxMembers=${query.maxMembers}&`;
       }
-      if (query.type) {
+      if (query?.type) {
         queryStr += `type=${query.type}&`;
       }
-      queryStr += `isPublic=${query.isPublic}`;
+      if (query?.isPublic) {
+        queryStr += `isPublic=${query?.isPublic}`;
+      }
       return `room/GetAllRooms${queryStr}`;
     }
   }

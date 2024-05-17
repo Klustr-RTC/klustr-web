@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { webRoutes } from '@/constants/routes';
 import { Room } from '@/types/room';
+import { LockKeyholeIcon, LockKeyholeOpenIcon, MessageCircle, Video } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TimeAgo from 'react-timeago';
 
@@ -19,19 +20,41 @@ export const RoomCard = (props: RoomCardProps) => {
         className="border cursor-pointer border-muted/50"
       >
         <CardHeader>
-          <CardTitle>{props.room.name}</CardTitle>
-          <CardDescription className="line-clamp-2">{props.room.description}</CardDescription>
+          <CardTitle className='tracking-wide'>{props.room.name}</CardTitle>
+          <CardDescription className="line-clamp-2">
+            {props.room.description.length > 50
+              ? `${props.room.description.substring(0, 50)}...`
+              : props.room.description}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="relative">
-            <div className="text-muted-foreground">
-              Created : <TimeAgo date={props.room.createdOn} />
-            </div>
-            <div className="text-muted-foreground">
-              Type : {props.room.type == 0 ? 'Chat' : 'Audio/Video'}
-            </div>
-            <Badge className="absolute bottom-0 right-0">
-              {props.room.isPublic ? 'Public' : 'Private'}
+            <Badge variant='secondary' className="text-sm text-muted-foreground">
+              {props.room.type == 0 ?
+                <div className='inline-flex rounded-full gap-1 items-center'>
+                  <span>Chat-only</span>
+                  <MessageCircle size={20} />
+                </div> :
+                <div className='flex gap-1 items-center'>
+                  <span>Video-Audio</span>
+                  <Video size={20} />
+                </div>
+              }
+            </Badge><br />
+            <Badge variant="secondary" className="text-muted-foreground text-xs mt-2">
+              <TimeAgo date={props.room.createdOn} />
+            </Badge>
+            <Badge className="absolute bottom-0 right-0 py-1">
+              {props.room.isPublic ?
+                <div className='flex gap-1 items-center'>
+                  <span>Public</span>
+                  <LockKeyholeOpenIcon size={15} />
+                </div> :
+                <div className='flex gap-1 items-center'>
+                  <span>Private</span>
+                  <LockKeyholeIcon size={15} />
+                </div>
+              }
             </Badge>
           </div>
         </CardContent>

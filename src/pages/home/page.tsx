@@ -10,7 +10,7 @@ export const Home = () => {
   const fetchRooms = async () => {
     try {
       setRoomLoading(true);
-      const res = await RoomService.getAllRooms({ isPublic: true });
+      const res = await RoomService.getAllRooms();
       if (res) {
         setRooms(res);
       }
@@ -26,7 +26,7 @@ export const Home = () => {
     fetchRooms();
   }, []);
   return (
-    <div className="flex flex-col sm:px-10 gap-10">
+    <div className="flex flex-col sm:px-10 gap-8">
       <HomeHeader />
       <RoomList rooms={rooms} roomLoading={roomLoading} />
     </div>

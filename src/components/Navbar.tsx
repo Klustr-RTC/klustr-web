@@ -114,11 +114,12 @@ export function Navbar() {
               </nav>
             </SheetContent>
           </Sheet>
-          <div className="text-3xl">
+          <div className="text-3xl font-bold tracking-wider py-[0.5px]">
             <span className="text-primary">K</span>lustr
+            <span className='font-light text-xl'> - Connect and Collaborate in Real-Time.</span>
           </div>
         </header>
-        <main className="flex-1 items-start  p-3 sm:py-0 ">
+        <main className="flex-1 items-start p-3 sm:py-2 ">
           <Outlet />
         </main>
       </div>

@@ -57,7 +57,7 @@ export const CreateRoom = () => {
   };
   return (
     <div className="md:w-3/5 sm:w-4/5 w-full mx-auto p-3 grid gap-5">
-      <h1 className="text-3xl font-semibold">Create Room</h1>
+      <h1 className="text-3xl font-semibold">CREATE ROOM</h1>
       <form
         onSubmit={e => {
           e.preventDefault();
@@ -128,8 +128,8 @@ export const CreateRoom = () => {
                 room.saveMessages == true
                   ? 'true'
                   : room.saveMessages == false
-                  ? 'false'
-                  : undefined
+                    ? 'false'
+                    : undefined
               }
               onValueChange={val => {
                 setRoom({ ...room, saveMessages: val == 'true' ? true : false });
