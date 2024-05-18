@@ -25,6 +25,7 @@ export const apiRoutes = {
     update: (roomId: string) => `room/${roomId}`,
     getByJoinCode: (joinCode: string) => `room/GetRoomByJoinCode/${joinCode}`,
     getById: (roomId: string) => `room/GetRoomById/${roomId}`,
+    generateLink: (roomId: string) => `room/${roomId}/generate-link`,
     getAll: (query?: RoomQueryObject) => {
       let queryStr = '?';
       if (query?.name) {
@@ -32,12 +33,6 @@ export const apiRoutes = {
       }
       if (query?.description) {
         queryStr += `description=${query.description}&`;
-      }
-      if (query?.minMembers) {
-        queryStr += `minMembers=${query.minMembers}&`;
-      }
-      if (query?.maxMembers) {
-        queryStr += `maxMembers=${query.maxMembers}&`;
       }
       if (query?.type) {
         queryStr += `type=${query.type}&`;

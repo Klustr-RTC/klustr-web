@@ -1,10 +1,8 @@
 export type RoomQueryObject = {
   name?: string;
   description?: string;
-  minMembers?: number;
-  maxMembers?: number;
   type?: RoomType;
-  isPublic: boolean;
+  isPublic?: boolean;
 };
 
 export type RoomType = 0 | 1;
@@ -26,6 +24,7 @@ export type Room = {
   createdBy: string;
   createdOn: string;
   saveMessages: boolean;
+  shareableLink: string;
 };
 
 export type CreateRoomResponse = {

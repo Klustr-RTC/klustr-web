@@ -32,6 +32,7 @@ const schema = z.object({
 export const CreateRoom = () => {
   const [room, setRoom] = useState<RoomFormType>(RoomIV);
   const [submitting, setSubmitting] = useState(false);
+  const [disableSaveMessages, setDisableSaveMessages] = useState(false);
   const navigate = useNavigate();
   const handleSubmit = async () => {
     try {
@@ -91,7 +92,15 @@ export const CreateRoom = () => {
           <Select
             required
             value={room.type?.toString()}
-            onValueChange={value => setRoom({ ...room, type: value == '0' ? 0 : 1 })}
+            onValueChange={value => {
+              if (value == '1') {
+                setRoom({ ...room, saveMessages: false, type: 1 });
+                setDisableSaveMessages(true);
+              } else {
+                setRoom({ ...room, type: 0 });
+                setDisableSaveMessages(false);
+              }
+            }}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select Room type" />
@@ -124,12 +133,13 @@ export const CreateRoom = () => {
           <div className="grid gap-2">
             <Label htmlFor="type">Save Messages?</Label>
             <Select
+              disabled={disableSaveMessages}
               value={
                 room.saveMessages == true
                   ? 'true'
                   : room.saveMessages == false
-                    ? 'false'
-                    : undefined
+                  ? 'false'
+                  : undefined
               }
               onValueChange={val => {
                 setRoom({ ...room, saveMessages: val == 'true' ? true : false });
