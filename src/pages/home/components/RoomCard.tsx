@@ -14,7 +14,11 @@ type RoomCardProps = {
 export const RoomCard = (props: RoomCardProps) => {
   const navigate = useNavigate();
   const handleRedirect = () => {
-    navigate(webRoutes.room.room(props.room.id));
+    if (props.room.type == 0) {
+      navigate(webRoutes.room.chat(props.room.id));
+    } else {
+      navigate(webRoutes.room.media(props.room.id));
+    }
   };
   return (
     <>

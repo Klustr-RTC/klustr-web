@@ -50,7 +50,7 @@ export const Home = () => {
     fetchRooms();
   }, []);
   return (
-    <div className="flex flex-col sm:px-10 gap-8">
+    <div className="flex flex-col sm:px-10 gap-8 py-4">
       <HomeHeader filtered={filtered} onClear={fetchRooms} onFilter={onFilter} />
       <RoomList rooms={rooms} roomLoading={roomLoading} />
     </div>
