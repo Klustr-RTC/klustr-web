@@ -76,7 +76,7 @@ export function Navbar() {
           </Tooltip>
         </nav>
       </aside>
-      <div className="flex flex-col sm:gap-4 sm:pl-14">
+      <div className="flex flex-col  sm:pl-14">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-muted bg-background px-4 sm:static sm:h-auto sm:py-2 sm:bg-background sm:px-6">
           <Sheet>
             <SheetTrigger asChild>
@@ -122,7 +122,7 @@ export function Navbar() {
             </span>
           </div>
         </header>
-        <main className="flex-1 items-start p-3 sm:py-2 ">
+        <main className="flex-1 items-start px-3 ">
           <Outlet />
         </main>
       </div>

@@ -43,7 +43,11 @@ export const CreateRoom = () => {
         if (res) {
           toast.success('Room Created Successfully');
           setRoom(RoomIV);
-          navigate(webRoutes.room.room(res.room.id));
+          if (res.room.type == 0) {
+            navigate(webRoutes.room.chat(res.room.id));
+          } else {
+            navigate(webRoutes.room.media(res.room.id));
+          }
         }
       } else {
         data.error.errors.forEach(error => {

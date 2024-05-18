@@ -8,7 +8,8 @@ export const webRoutes = {
   home: '/',
   room: {
     create: '/room/create',
-    room: (id: string) => `/room/${id}`
+    chat: (id: string) => `/room/chat/${id}`,
+    media: (id: string) => `/room/media/${id}`
   }
 };
 
@@ -26,6 +27,9 @@ export const apiRoutes = {
     getByJoinCode: (joinCode: string) => `room/GetRoomByJoinCode/${joinCode}`,
     getById: (roomId: string) => `room/GetRoomById/${roomId}`,
     generateLink: (roomId: string) => `room/${roomId}/generate-link`,
+    getJoinCode: (roomId: string) => `room/${roomId}/GetJoinCode`,
+    verifyByJoinCode: (roomId: string, joinCode: string) =>
+      `room/${roomId}/verifyJoinCode/${joinCode}`,
     getAll: (query?: RoomQueryObject) => {
       let queryStr = '?';
       if (query?.name) {
@@ -42,5 +46,11 @@ export const apiRoutes = {
       }
       return `room/GetAllRooms${queryStr}`;
     }
+  },
+  member: {
+    create: 'member',
+    delete: (memberId: string) => `member/${memberId}`,
+    update: (memberId: string) => `member/${memberId}`,
+    getByRoomId: (roomId: string) => `member/GetMembersByRoom/${roomId}`
   }
 };

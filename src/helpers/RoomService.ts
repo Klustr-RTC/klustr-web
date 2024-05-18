@@ -28,4 +28,16 @@ export class RoomService {
     const { data } = await api.get(apiRoutes.room.getAll(query));
     return data as Room[];
   });
+  static verifyJoinCode = errorHandler(async (joinCode: string, roomId: string) => {
+    const { data } = await api.get(apiRoutes.room.verifyByJoinCode(roomId, joinCode));
+    return data as Room;
+  });
+  static generateLink = errorHandler(async (roomId: string) => {
+    const { data } = await api.post(apiRoutes.room.generateLink(roomId));
+    return data as { shareableLink: string };
+  });
+  static getJoinCode = errorHandler(async (roomId: string) => {
+    const { data } = await api.get(apiRoutes.room.getJoinCode(roomId));
+    return data as { joinCode: string };
+  });
 }

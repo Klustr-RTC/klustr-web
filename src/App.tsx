@@ -6,10 +6,11 @@ import { Register } from './pages/auth/signup/page';
 import { Toaster } from 'sonner';
 import { useTheme } from './components/theme-provider';
 import { CreateRoom } from './pages/room/create/page';
-import { RoomPage } from './pages/room/page';
 import { webRoutes } from './constants/routes';
 import useKlustrStore from './hooks/store';
 import { decodeToken } from './utils/token';
+import { ChatRoomPage } from './pages/room/chat/page';
+import { VideoRoomPage } from './pages/room/Video/page';
 
 function App() {
   const { theme } = useTheme();
@@ -46,8 +47,12 @@ function App() {
               element: <CreateRoom />
             },
             {
-              path: ':id',
-              element: <RoomPage />
+              path: 'chat/:id',
+              element: <ChatRoomPage />
+            },
+            {
+              path: 'media/:id',
+              element: <VideoRoomPage />
             }
           ]
         }
