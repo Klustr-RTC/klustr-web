@@ -2,6 +2,7 @@ import { RoomInfo } from '@/components/RoomInfo';
 import { MemberWithUser } from '@/types/member';
 import { Room } from '@/types/room';
 import { useState } from 'react';
+import { StartPage } from './StartPage';
 
 type Props = {
   room: Room;
@@ -10,6 +11,7 @@ type Props = {
 };
 export const MediaRoom = ({ room, members, setMembers }: Props) => {
   const [infoOpen, setInfoOpen] = useState(false);
+  const [showStartPage, setShowStartPage] = useState(true);
   return (
     <>
       <div className="lg:w-[70%] md:w-[80%] sm:w-[90%] w-full mx-auto ">
@@ -21,7 +23,16 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
             {room.name}
           </h1>
         </div>
-        <p>Members : {members.length}</p>
+        {showStartPage ? (
+          <StartPage
+            onJoin={async () => {
+              setShowStartPage(false);
+            }}
+            room={room}
+          />
+        ) : (
+          <div>welcome to room {room.name}</div>
+        )}
       </div>
       <RoomInfo
         setMembers={setMembers}

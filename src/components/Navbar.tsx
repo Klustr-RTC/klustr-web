@@ -122,7 +122,7 @@ export function Navbar() {
             </span>
           </div>
         </header>
-        <main className="flex-1 items-start px-3 ">
+        <main className="items-start px-3 ">
           <Outlet />
         </main>
       </div>
