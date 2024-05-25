@@ -18,7 +18,7 @@ export const CheckJoinCode = ({ onJoinCode }: Props) => {
         await onJoinCode(code);
         setLoading(false);
       }}
-      className="w-[400px] mx-auto my-10 border rounded-lg p-4 grid gap-3"
+      className="max-w-[400px] mx-auto my-10 border rounded-lg p-4 grid gap-3"
     >
       <h1 className="text-xl font-semibold">Enter Join Code to Join Room</h1>
       <div className="grid gap-2">

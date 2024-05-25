@@ -16,6 +16,8 @@ import { MessageService } from '@/helpers/MessageService';
 import { HubConnectionState } from '@microsoft/signalr';
 import { Loader } from '@/components/Loader';
 import { toast } from 'sonner';
+import { webRoutes } from '@/constants/routes';
+import { useNavigate } from 'react-router-dom';
 
 type Props = {
   room: Room;
@@ -26,12 +28,15 @@ type Props = {
 export const ChatRoom = ({ room, members, setMembers }: Props) => {
   const [infoOpen, setInfoOpen] = useState(false);
   const userInfo = useKlustrStore(state => state.userInfo);
+  const [roomJoining, setRoomJoining] = useState(false);
+  const [joined, setJoined] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [sendMessageLoading, setSendMessageLoading] = useState(false);
   const [content, setContent] = useState('');
   const [, setRoomUsers] = useState<User[]>([]);
   const { connection } = useSocket();
+  const navigate = useNavigate();
 
   const handleSendMessage = async () => {
     try {
@@ -94,7 +99,9 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
 
   const joinRoom = useCallback(async () => {
     console.log('current state', connection?.state);
+    if (joined || roomJoining) return;
     if (connection?.state === HubConnectionState.Connected) {
+      setRoomJoining(true);
       try {
         console.log('joining room');
         await connection.invoke('joinRoom', {
@@ -105,7 +112,7 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
         console.log(error);
       }
     }
-  }, [connection, room.id, userInfo]);
+  }, [connection, joined, room.id, userInfo]);
 
   useEffect(() => {
     joinRoom();
@@ -119,12 +126,26 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
     connection.on('SendConnectedUsers', handleSendConnectedUsers);
     connection.on('UserJoined', handleUserJoined);
     connection.on('UserLeft', handleUserLeft);
-
+    connection.on('JoinRoomResponse', (res: number, count: number) => {
+      console.log('No of Users', count);
+      if (res === 1) {
+        console.log('Joined Room');
+        setJoined(true);
+      } else if (res == 2) {
+        toast.error('Room Full');
+        navigate(webRoutes.home);
+      } else {
+        toast.error('Error Joining Room');
+        navigate(webRoutes.home);
+      }
+      setRoomJoining(false);
+    });
     return () => {
       connection.off('ReceiveMessage');
       connection.off('SendConnectedUsers');
       connection.off('UserJoined');
       connection.off('UserLeft');
+      connection.off('JoinRoomResponse');
     };
   }, [
     connection,
@@ -132,59 +153,64 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
     handleReceiveMessage,
     handleSendConnectedUsers,
     handleUserJoined,
-    handleUserLeft
+    handleUserLeft,
+    navigate,
+    roomJoining
   ]);
 
   return (
     <>
-      <div
-        className="lg:w-[60%] md:w-[70%] sm:w-[80%] w-full mx-auto flex flex-col"
-        style={{ height: 'calc(100dvh - 56px)' }}
-      >
-        <div className="flex z-50 justify-center items-center py-2 bg-transparent sticky top-0  backdrop-blur-lg">
-          <h1
-            onClick={() => setInfoOpen(true)}
-            className="text-2xl cursor-pointer font-semibold text-center"
-          >
-            {room.name}
-          </h1>
+      <Loader loading={roomJoining} />
+      {!roomJoining && (
+        <div
+          className="lg:w-[60%] md:w-[70%] sm:w-[80%] w-full mx-auto flex flex-col"
+          style={{ height: 'calc(100dvh - 56px)' }}
+        >
+          <div className="flex z-50 justify-center items-center py-2 bg-transparent sticky top-0  backdrop-blur-lg">
+            <h1
+              onClick={() => setInfoOpen(true)}
+              className="text-2xl cursor-pointer font-semibold text-center"
+            >
+              {room.name}
+            </h1>
+          </div>
+          <Loader loading={loading} />
+          <ScrollArea className="flex-1 overflow-y-auto">
+            {!loading && (
+              <div className="p-4 space-y-5">
+                {messages.map((msg, index) =>
+                  msg.user.id == userInfo?.id ? (
+                    <RightMessage key={index} message={msg} />
+                  ) : (
+                    <LeftMessage key={index} message={msg} />
+                  )
+                )}
+              </div>
+            )}
+          </ScrollArea>
+          <div className="flex justify-center items-center py-2 bg-transparent  backdrop-blur-lg gap-2">
+            <Input
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              type="text"
+              placeholder="Type a message"
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  handleSendMessage();
+                }
+              }}
+            />
+            <CustomButton
+              loading={sendMessageLoading}
+              onClick={handleSendMessage}
+              size={'icon'}
+              variant={'secondary'}
+            >
+              <SendHorizonal size={20} />
+            </CustomButton>
+          </div>
         </div>
-        <Loader loading={loading} />
-        <ScrollArea className="flex-1 overflow-y-auto">
-          {!loading && (
-            <div className="p-4 space-y-5">
-              {messages.map((msg, index) =>
-                msg.user.id == userInfo?.id ? (
-                  <RightMessage key={index} message={msg} />
-                ) : (
-                  <LeftMessage key={index} message={msg} />
-                )
-              )}
-            </div>
-          )}
-        </ScrollArea>
-        <div className="flex justify-center items-center py-2 bg-transparent  backdrop-blur-lg gap-2">
-          <Input
-            value={content}
-            onChange={e => setContent(e.target.value)}
-            type="text"
-            placeholder="Type a message"
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                handleSendMessage();
-              }
-            }}
-          />
-          <CustomButton
-            loading={sendMessageLoading}
-            onClick={handleSendMessage}
-            size={'icon'}
-            variant={'secondary'}
-          >
-            <SendHorizonal size={20} />
-          </CustomButton>
-        </div>
-      </div>
+      )}
       <RoomInfo
         setMembers={setMembers}
         room={room}
