@@ -7,7 +7,7 @@ export const CustomButton = (props: CustomButtonProps) => {
   return (
     <Button {...props} disabled={props.loading || props.disabled}>
       {props.loading && <Loader className="w-5 h-5 mr-2 animate-spin" />}
-      {props.children}
+      {props.size != 'icon' ? props.children : !props.loading && props.children}
     </Button>
   );
 };
