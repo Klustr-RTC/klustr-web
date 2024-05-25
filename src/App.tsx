@@ -11,6 +11,7 @@ import useKlustrStore from './hooks/store';
 import { decodeToken } from './utils/token';
 import { ChatRoomPage } from './pages/room/chat/page';
 import { VideoRoomPage } from './pages/room/Video/page';
+import { UserService } from './helpers/UserService';
 
 function App() {
   const { theme } = useTheme();
@@ -26,11 +27,20 @@ function App() {
         }
         const data = decodeToken(token);
         if (data) {
-          setUserInfo({
-            email: data.email,
-            id: data.userId,
-            username: data.given_name
-          });
+          if (data.exp! * 1000 < Date.now()) {
+            localStorage.removeItem('token');
+            return redirect(webRoutes.auth.login);
+          }
+          const user = await UserService.getUserById(data.userId);
+          if (user) {
+            setUserInfo(user);
+          } else {
+            setUserInfo({
+              email: data.email,
+              username: data.given_name,
+              id: data.userId
+            });
+          }
         }
         return null;
       },

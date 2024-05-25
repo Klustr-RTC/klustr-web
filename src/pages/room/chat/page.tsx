@@ -5,11 +5,12 @@ import { RoomService } from '@/helpers/RoomService';
 import useKlustrStore from '@/hooks/store';
 import { MemberWithUser } from '@/types/member';
 import { Room } from '@/types/room';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CheckJoinCode } from '@/components/CheckJoinCode';
 import { ChatRoom } from './components/ChatRoom';
 import { toast } from 'sonner';
+import { SocketProvider } from '@/hooks/useSocket';
 
 export const ChatRoomPage = () => {
   const [room, setRoom] = useState<Room>();
@@ -20,7 +21,7 @@ export const ChatRoomPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const fetchRoom = async () => {
+  const fetchRoom = useCallback(async () => {
     try {
       if (!id) {
         return;
@@ -51,7 +52,8 @@ export const ChatRoomPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate, userInfo]);
+
   const handleJoinCode = async (code: string) => {
     try {
       const res = await RoomService.verifyJoinCode(code, id!);
@@ -66,17 +68,19 @@ export const ChatRoomPage = () => {
 
   useEffect(() => {
     fetchRoom();
-  }, []);
+  }, [fetchRoom]);
   return (
-    <div>
-      <Loader loading={loading} />
-      {!loading ? (
-        room && isJoinable ? (
-          <ChatRoom setMembers={setMembers} room={room} members={members} />
-        ) : (
-          <CheckJoinCode onJoinCode={handleJoinCode} />
-        )
-      ) : null}
-    </div>
+    <SocketProvider>
+      <div>
+        <Loader loading={loading} />
+        {!loading ? (
+          room && isJoinable ? (
+            <ChatRoom setMembers={setMembers} room={room} members={members} />
+          ) : (
+            <CheckJoinCode onJoinCode={handleJoinCode} />
+          )
+        ) : null}
+      </div>
+    </SocketProvider>
   );
 };

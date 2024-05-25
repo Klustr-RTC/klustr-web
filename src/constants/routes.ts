@@ -52,5 +52,17 @@ export const apiRoutes = {
     delete: (memberId: string) => `member/${memberId}`,
     update: (memberId: string) => `member/${memberId}`,
     getByRoomId: (roomId: string) => `member/GetMembersByRoom/${roomId}`
+  },
+  user: {
+    getById: (userId: string) => `user/${userId}`,
+    update: `user`,
+    delete: 'user'
+  },
+  message: {
+    create: 'chat',
+    delete: (id: string) => `chat/${id}`,
+    getById: (id: string) => `chat/GetMessageById/${id}`,
+    getByRoomId: (roomId: string) => `chat/GetMessagesByRoomId/${roomId}`,
+    getByUserId: (userId: string) => `chat/GetMessagesByUserId/${userId}`
   }
 };

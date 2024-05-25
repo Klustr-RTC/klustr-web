@@ -11,7 +11,7 @@ export const errorHandler = <T extends any[], R>(
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // For Development
-        console.log(error);
+        console.log(error.response);
         if (typeof error.response?.data == 'string') {
           toast.error(error.response.data);
         } else if (error.response?.data.errors) {

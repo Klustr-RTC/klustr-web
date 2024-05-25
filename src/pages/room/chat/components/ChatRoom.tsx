@@ -3,148 +3,137 @@ import useKlustrStore from '@/hooks/store';
 import { MemberWithUser } from '@/types/member';
 import { Message } from '@/types/message';
 import { Room } from '@/types/room';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import RightMessage from '../../components/RightChat';
 import LeftMessage from '../../components/LeftChat';
 import { Input } from '@/components/ui/input';
 import { CustomButton } from '@/components/CustomButton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SendHorizonal } from 'lucide-react';
+import { useSocket } from '@/hooks/useSocket';
+import { User } from '@/types/auth';
+import { MessageService } from '@/helpers/MessageService';
+import { HubConnectionState } from '@microsoft/signalr';
+import { Loader } from '@/components/Loader';
+import { toast } from 'sonner';
 
 type Props = {
   room: Room;
   members: MemberWithUser[];
   setMembers: (members: MemberWithUser[]) => void;
 };
-const randomMessages = [
-  {
-    id: '1',
-    content: 'Hello how are you doing? can you help me with something? I am stuck at something.',
-    userId: '1',
-    user: {
-      id: '2',
-      username: 'John Doe',
-      email: 'nilesh@gmail.com'
-    },
-    roomId: '1',
-    timeStamp: '2021-08-16T14:00:00'
-  },
-  {
-    id: '2',
-    content:
-      'Yes sure, what do you need help with? I am here to help you. I will do my best to help you.',
-    userId: '2',
-    user: {
-      id: '2',
-      username: 'John Doe',
-      email: 'nilesh@gmail.com'
-    },
-    roomId: '1',
-    timeStamp: '2021-08-16T14:01:00'
-  },
-  {
-    id: '2',
-    content:
-      'Yes sure, what do you need help with? I am here to help you. I will do my best to help you.',
-    userId: '2',
-    user: {
-      id: '2',
-      username: 'John Doe',
-      email: 'nilesh@gmail.com'
-    },
-    roomId: '1',
-    timeStamp: '2021-08-16T14:01:00'
-  },
-  {
-    id: '2',
-    content:
-      'Yes sure, what do you need help with? I am here to help you. I will do my best to help you.',
-    userId: '2',
-    user: {
-      id: '2',
-      username: 'John Doe',
-      email: 'nilesh@gmail.com'
-    },
-    roomId: '1',
-    timeStamp: '2021-08-16T14:01:00'
-  },
-  {
-    id: '3',
-    content: 'How are you?',
-    userId: '1',
-    roomId: '1',
-    user: {
-      id: '2',
-      username: 'John Doe',
-      email: 'nilesh@gmail.com'
-    },
-    timeStamp: '2021-08-16T14:02:00'
-  },
-  {
-    id: '3',
-    content: 'How are you?',
-    userId: '1',
-    roomId: '1',
-    user: {
-      id: '2',
-      username: 'John Doe',
-      email: 'nilesh@gmail.com'
-    },
-    timeStamp: '2021-08-16T14:02:00'
-  },
-  {
-    id: '3',
-    content: 'How are you?',
-    userId: '1',
-    roomId: '1',
-    user: {
-      id: '2',
-      username: 'John Doe',
-      email: 'nilesh@gmail.com'
-    },
-    timeStamp: '2021-08-16T14:02:00'
-  },
-  {
-    id: '3',
-    content: 'How are you?',
-    userId: '1',
-    roomId: '1',
-    user: {
-      id: '2',
-      username: 'John Doe',
-      email: 'nilesh@gmail.com'
-    },
-    timeStamp: '2021-08-16T14:02:00'
-  },
-  {
-    id: '3',
-    content: 'How are you?',
-    userId: '1',
-    roomId: '1',
-    user: {
-      id: '2',
-      username: 'John Doe',
-      email: 'nilesh@gmail.com'
-    },
-    timeStamp: '2021-08-16T14:02:00'
-  },
-  {
-    id: '4',
-    content: 'I am fine',
-    userId: '2',
-    user: {
-      id: '2',
-      username: 'John Doe',
-      email: 'nilesh@gmail.com'
-    },
-    roomId: '1',
-    timeStamp: '2021-08-16T14:03:00'
-  }
-];
+
 export const ChatRoom = ({ room, members, setMembers }: Props) => {
   const [infoOpen, setInfoOpen] = useState(false);
   const userInfo = useKlustrStore(state => state.userInfo);
-  const [messages] = useState<Message[]>(randomMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sendMessageLoading, setSendMessageLoading] = useState(false);
+  const [content, setContent] = useState('');
+  const [, setRoomUsers] = useState<User[]>([]);
+  const { connection } = useSocket();
+
+  const handleSendMessage = async () => {
+    try {
+      setSendMessageLoading(true);
+      const res = await MessageService.sendMessage({
+        content,
+        roomId: room.id,
+        userId: userInfo?.id ?? ''
+      });
+      if (res) {
+        setContent('');
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSendMessageLoading(false);
+    }
+  };
+
+  const handleUserJoined = useCallback(
+    async (user: { user: User; room: string }) => {
+      if (userInfo?.id != user.user.id) {
+        toast.success(`${user?.user?.username} join the room`);
+      }
+      setRoomUsers(prev => {
+        if (prev.find(u => u.id === user?.user?.id)) return prev;
+        return [...prev, user.user];
+      });
+    },
+    [userInfo?.id]
+  );
+
+  const handleSendConnectedUsers = useCallback((users: User[]) => {
+    console.log(users);
+    setRoomUsers(users);
+  }, []);
+  const handleReceiveMessage = useCallback((message: Message) => {
+    console.log(message);
+    setMessages(prev => [...prev, message]);
+  }, []);
+
+  const handleUserLeft = useCallback((user: { user: User; room: string }) => {
+    toast.success(`${user?.user?.username} left the room`);
+    setRoomUsers(prev => prev.filter(u => u.id !== user.user.id));
+  }, []);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await MessageService.getMessagesByRoomId(room.id);
+      if (data) {
+        setMessages(data);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [room.id]);
+
+  const joinRoom = useCallback(async () => {
+    console.log('current state', connection?.state);
+    if (connection?.state === HubConnectionState.Connected) {
+      try {
+        console.log('joining room');
+        await connection.invoke('joinRoom', {
+          User: userInfo,
+          Room: room.id
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }, [connection, room.id, userInfo]);
+
+  useEffect(() => {
+    joinRoom();
+  }, [joinRoom, connection?.state]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    connection.on('ReceiveMessage', handleReceiveMessage);
+    connection.on('SendConnectedUsers', handleSendConnectedUsers);
+    connection.on('UserJoined', handleUserJoined);
+    connection.on('UserLeft', handleUserLeft);
+
+    return () => {
+      connection.off('ReceiveMessage');
+      connection.off('SendConnectedUsers');
+      connection.off('UserJoined');
+      connection.off('UserLeft');
+    };
+  }, [
+    connection,
+    fetchData,
+    handleReceiveMessage,
+    handleSendConnectedUsers,
+    handleUserJoined,
+    handleUserLeft
+  ]);
 
   return (
     <>
@@ -160,20 +149,38 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
             {room.name}
           </h1>
         </div>
+        <Loader loading={loading} />
         <ScrollArea className="flex-1 overflow-y-auto">
-          <div className="p-4 space-y-5">
-            {messages.map((msg, index) =>
-              index % 2 ? (
-                <RightMessage key={index} message={msg} />
-              ) : (
-                <LeftMessage key={index} message={msg} />
-              )
-            )}
-          </div>
+          {!loading && (
+            <div className="p-4 space-y-5">
+              {messages.map((msg, index) =>
+                msg.user.id == userInfo?.id ? (
+                  <RightMessage key={index} message={msg} />
+                ) : (
+                  <LeftMessage key={index} message={msg} />
+                )
+              )}
+            </div>
+          )}
         </ScrollArea>
         <div className="flex justify-center items-center py-2 bg-transparent  backdrop-blur-lg gap-2">
-          <Input type="text" placeholder="Type a message" />
-          <CustomButton size={'icon'} variant={'secondary'}>
+          <Input
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            type="text"
+            placeholder="Type a message"
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                handleSendMessage();
+              }
+            }}
+          />
+          <CustomButton
+            loading={sendMessageLoading}
+            onClick={handleSendMessage}
+            size={'icon'}
+            variant={'secondary'}
+          >
             <SendHorizonal size={20} />
           </CustomButton>
         </div>

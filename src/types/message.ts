@@ -8,3 +8,9 @@ export type Message = {
   roomId: string;
   timeStamp: string;
 };
+
+export type MessageForm = {
+  content: string;
+  userId: string;
+  roomId: string;
+};

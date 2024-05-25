@@ -18,6 +18,7 @@ export type GoogleAuthSchema = {
 export type User = {
   email: string;
   username: string;
+  avatar?: string;
   id: string;
 };
 
