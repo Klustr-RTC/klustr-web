@@ -3,7 +3,7 @@ import useKlustrStore from '@/hooks/store';
 import { MemberWithUser } from '@/types/member';
 import { Message } from '@/types/message';
 import { Room } from '@/types/room';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import RightMessage from '../../components/RightChat';
 import LeftMessage from '../../components/LeftChat';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,7 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
   const [infoOpen, setInfoOpen] = useState(false);
   const userInfo = useKlustrStore(state => state.userInfo);
   const [roomJoining, setRoomJoining] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [joined, setJoined] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +38,10 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
   const [, setRoomUsers] = useState<User[]>([]);
   const { connection } = useSocket();
   const navigate = useNavigate();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleSendMessage = async () => {
     try {
@@ -158,6 +163,10 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
     roomJoining
   ]);
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   return (
     <>
       <Loader loading={roomJoining} />
@@ -187,6 +196,7 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
                 )}
               </div>
             )}
+            <div className="mb-2" ref={messagesEndRef} />
           </ScrollArea>
           <div className="flex justify-center items-center py-2 bg-transparent  backdrop-blur-lg gap-2">
             <Input

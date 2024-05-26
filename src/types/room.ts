@@ -37,3 +37,8 @@ export enum RoomTypeMap {
   chatOnly = 0,
   AudioVideo = 1
 }
+
+export type VideoConfig = {
+  audio: boolean;
+  video: boolean;
+};

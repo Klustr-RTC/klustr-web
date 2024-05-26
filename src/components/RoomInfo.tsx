@@ -6,7 +6,7 @@ import { Label } from './ui/label';
 import { Separator } from './ui/separator';
 import { CustomButton } from './CustomButton';
 import { Check, Copy } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import useKlustrStore from '@/hooks/store';
 import { RoomService } from '@/helpers/RoomService';
 import { toast } from 'sonner';
@@ -57,12 +57,12 @@ export const RoomInfo = ({ room, members, open, onOpenChange, setMembers }: Prop
     setLinkLoading(false);
   };
 
-  const fetchJoinCode = async () => {
+  const fetchJoinCode = useCallback(async () => {
     const res = await RoomService.getJoinCode(room.id);
     if (res) {
       setJoinCode(res.joinCode);
     }
-  };
+  }, [room.id]);
 
   useEffect(() => {
     const m = members.find(member => member.user.id === userInfo?.id) ?? null;
@@ -70,7 +70,7 @@ export const RoomInfo = ({ room, members, open, onOpenChange, setMembers }: Prop
     if (m?.isAdmin) {
       fetchJoinCode();
     }
-  }, [members, userInfo]);
+  }, [fetchJoinCode, members, userInfo]);
 
   return (
     <>
@@ -196,11 +196,8 @@ const MemberCard = ({
       <ContextMenuTrigger>
         <div className="flex items-center gap-4">
           <Avatar className="hidden h-9 w-9 sm:flex">
-            <AvatarImage
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Windows_10_Default_Profile_Picture.svg/2048px-Windows_10_Default_Profile_Picture.svg.png"
-              alt="Avatar"
-            />
-            <AvatarFallback>OM</AvatarFallback>
+            <AvatarImage src={member.user.avatar} alt={member.user.username} />
+            <AvatarFallback>{member.user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="grid gap-1">
             <p className="text-sm font-medium leading-none">{member.user.username}</p>

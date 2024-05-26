@@ -10,14 +10,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { MediaRoom } from './components/MediaRoom';
 import { CheckJoinCode } from '@/components/CheckJoinCode';
 import { toast } from 'sonner';
+import { SocketProvider } from '@/hooks/useSocket';
 
 export const VideoRoomPage = () => {
   const [loading, setLoading] = useState(true);
   const [room, setRoom] = useState<Room>();
   const [isJoinable, setIsJoinable] = useState(false);
   const [members, setMembers] = useState<MemberWithUser[]>([]);
-  console.log(members);
-
   const navigate = useNavigate();
   const userInfo = useKlustrStore(state => state.userInfo);
   const { id } = useParams();
@@ -70,15 +69,17 @@ export const VideoRoomPage = () => {
     fetchRoom();
   }, []);
   return (
-    <div>
-      <Loader loading={loading} />
-      {!loading ? (
-        room && isJoinable ? (
-          <MediaRoom setMembers={setMembers} room={room} members={members} />
-        ) : (
-          <CheckJoinCode onJoinCode={handleJoinCode} />
-        )
-      ) : null}
-    </div>
+    <SocketProvider>
+      <div className="flex-1 flex flex-col">
+        <Loader loading={loading} />
+        {!loading ? (
+          room && isJoinable ? (
+            <MediaRoom setMembers={setMembers} room={room} members={members} />
+          ) : (
+            <CheckJoinCode onJoinCode={handleJoinCode} />
+          )
+        ) : null}
+      </div>
+    </SocketProvider>
   );
 };
