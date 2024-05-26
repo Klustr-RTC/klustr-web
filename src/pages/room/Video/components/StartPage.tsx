@@ -4,7 +4,7 @@ import { Mic, MicOff, Video, VideoOff } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 type Props = {
-  onJoin: () => Promise<void>;
+  onJoin: (config: { audio: boolean; video: boolean }) => Promise<void>;
   room: Room;
 };
 export const StartPage = (props: Props) => {
@@ -16,12 +16,18 @@ export const StartPage = (props: Props) => {
   const [joining, setJoining] = useState(false);
   const [permission, setPermission] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
-  const [localAudioTrack, setLocalAudioTrack] = useState<MediaStreamTrack | null>(null);
+  const [, setLocalAudioTrack] = useState<MediaStreamTrack | null>(null);
   const [localVideoTrack, setLocalVideoTrack] = useState<MediaStreamTrack | null>(null);
 
   const startVideo = async () => {
     try {
-      const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const localStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user',
+          aspectRatio: 4 / 3
+        },
+        audio: true
+      });
       if (!localStream) {
         setPermission(false);
         return;
@@ -29,6 +35,7 @@ export const StartPage = (props: Props) => {
       setPermission(true);
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = localStream;
+        localVideoRef.current.play();
       }
       setLocalAudioTrack(localStream.getAudioTracks()[0]);
       setLocalVideoTrack(localStream.getVideoTracks()[0]);
@@ -51,7 +58,7 @@ export const StartPage = (props: Props) => {
             </div>
           </div>
         ) : (
-          <video ref={localVideoRef} autoPlay playsInline muted className="rounded-lg w-full" />
+          <video ref={localVideoRef} playsInline muted className="rounded-lg w-full" />
         )}
       </div>
       <div className="sm:w-[40%] w-full  p-3  flex flex-col gap-3">
@@ -86,15 +93,16 @@ export const StartPage = (props: Props) => {
           </CustomButton>
         </div>
         <CustomButton
+          disabled={!permission}
           onClick={async () => {
             setJoining(true);
-            await props.onJoin();
+            await props.onJoin(config);
             setJoining(false);
           }}
           loading={joining}
           size={'lg'}
         >
-          Join Room
+          {permission ? 'Join Room' : 'Permission Denied'}
         </CustomButton>
       </div>
     </div>

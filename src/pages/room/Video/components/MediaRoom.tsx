@@ -1,41 +1,280 @@
 import { RoomInfo } from '@/components/RoomInfo';
 import { MemberWithUser } from '@/types/member';
-import { Room } from '@/types/room';
-import { useEffect, useRef, useState } from 'react';
+import { Room, VideoConfig } from '@/types/room';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StartPage } from './StartPage';
 import { Info, MessageSquareText, Mic, MicOff, Users, Video, VideoOff } from 'lucide-react';
 import MediaChat from './MediaChat';
+import useKlustrStore from '@/hooks/store';
+import { useSocket } from '@/hooks/useSocket';
+// import { HubConnectionState } from '@microsoft/signalr';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { webRoutes } from '@/constants/routes';
+import { User } from '@/types/auth';
+import { Message } from '@/types/message';
+import Peer from 'peerjs';
+import VideoGrid from './VideoGrid';
+import RoomUsers from './RoomUsers';
+import { Loader } from '@/components/Loader';
 
 type Props = {
   room: Room;
   members: MemberWithUser[];
   setMembers: (members: MemberWithUser[]) => void;
 };
+
 export const MediaRoom = ({ room, members, setMembers }: Props) => {
+  const userInfo = useKlustrStore(state => state.userInfo);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [roomUserOpen, setRoomUserOpen] = useState(false);
+  const [roomJoining, setRoomJoining] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [showStartPage, setShowStartPage] = useState(true);
-  const localVideoRefs = useRef<HTMLVideoElement[]>([]);
-  const numVideos = members?.length;
-  const [isMicOn, setIsMicOn] = useState(false);
-  const [isVideoOn, setIsVideoOn] = useState(false);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const [config, setConfig] = useState<VideoConfig>({
+    audio: true,
+    video: true
+  });
+  const navigate = useNavigate();
+  const { connection } = useSocket();
+  const [roomUsers, setRoomUsers] = useState([] as User[]);
+  const [messages, setMessages] = useState([] as Message[]);
+  const [peer, setPeer] = useState<Peer | null>(null);
+  const [peers, setPeers] = useState<{
+    [id: string]: { stream: MediaStream; user: User; config: VideoConfig };
+  }>({});
+
+  const handleUserJoined = useCallback(
+    async (user: { user: User; room: string }) => {
+      if (userInfo?.id != user.user.id) {
+        toast.success(`${user?.user?.username} join the room`);
+      }
+      setRoomUsers(prev => {
+        if (prev.find(u => u.id === user?.user?.id)) return prev;
+        return [...prev, user.user];
+      });
+    },
+    [userInfo?.id]
+  );
+
+  const handleSendConnectedUsers = useCallback((users: User[]) => {
+    console.log(users);
+    setRoomUsers(users);
+  }, []);
+  const handleReceiveMessage = useCallback((message: Message) => {
+    console.log(message);
+    if (message.user.id !== userInfo?.id) {
+      toast.success(`${message.user.username} sent: ${message.content}`);
+    }
+    setMessages(prev => [...prev, message]);
+  }, []);
+
+  const handleUserLeft = useCallback((user: { user: User; room: string }, id: string) => {
+    toast.success(`${user?.user?.username} left the room`);
+    setRoomUsers(prev => prev.filter(u => u.id !== user.user.id));
+    console.log('User Left', id);
+    setPeers(prevPeers => {
+      const updatedPeers = { ...prevPeers };
+      const id = Object.keys(updatedPeers).find(id => updatedPeers[id].user.id === user.user.id);
+      if (id) {
+        delete updatedPeers[id];
+      }
+      return updatedPeers;
+    });
+  }, []);
+  const handleRoomJoinResponse = useCallback(
+    (res: number, count: number) => {
+      console.log('No of Users', count);
+      if (res === 1) {
+        setRoomJoining(false);
+        console.log('Joined Room');
+      } else if (res == 2) {
+        toast.error('Room Full');
+        navigate(webRoutes.home);
+      } else {
+        toast.error('Error Joining Room');
+        navigate(webRoutes.home);
+      }
+    },
+    [navigate]
+  );
+
+  const handleToggleVideo = useCallback((peerId: string, isVideoOn: boolean) => {
+    // console.log('Toggle Video', peerId, isVideoOn);
+    setPeers(prevPeers => {
+      const updatedPeers = { ...prevPeers };
+      const peer = updatedPeers[peerId];
+      if (peer) {
+        peer.stream.getVideoTracks().forEach(track => {
+          track.enabled = isVideoOn;
+        });
+        updatedPeers[peerId] = { ...peer, config: { ...peer.config, video: isVideoOn } };
+      }
+      return updatedPeers;
+    });
+  }, []);
+
+  const handleToggleAudio = useCallback((peerId: string, isAudioOn: boolean) => {
+    // console.log('Toggle Audio', peerId, isAudioOn);
+
+    setPeers(prevPeers => {
+      const updatedPeers = { ...prevPeers };
+      const peer = updatedPeers[peerId];
+      if (peer) {
+        peer.stream.getAudioTracks().forEach(track => {
+          track.enabled = isAudioOn;
+        });
+        updatedPeers[peerId] = { ...peer, config: { ...peer.config, audio: isAudioOn } };
+      }
+      return updatedPeers;
+    });
+  }, []);
 
   useEffect(() => {
-    if (!showStartPage) {
-      startLocalVideo(); // Start your local video when the start page is hidden
-    }
-  }, [showStartPage]);
+    connection.on('ReceiveMessage', handleReceiveMessage);
+    connection.on('SendConnectedUsers', handleSendConnectedUsers);
+    connection.on('UserJoined', handleUserJoined);
+    connection.on('UserLeft', handleUserLeft);
+    connection.on('JoinRoomResponse', handleRoomJoinResponse);
+    connection.on('ToggleVideo', handleToggleVideo);
+    connection.on('ToggleAudio', handleToggleAudio);
+    connection?.on('NewPeer', async (newPeerId: string, user: User, peerConfig: VideoConfig) => {
+      if (newPeerId !== peer?.id) {
+        console.log('New Peer From', user.username);
+        console.log('Calling ', user?.username);
 
-  const startLocalVideo = async () => {
-    try {
-      const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      if (localStream) {
-        for (let i = 0; i < numVideos; i++) {
-          if (localVideoRefs.current[i] && localStream) {
-            localVideoRefs.current[i].srcObject = localStream;
-          }
-        }
+        const call = peer?.call(newPeerId, localStream!, {
+          metadata: { user: userInfo, config: config }
+        });
+        call?.on('stream', remoteStream => {
+          console.log('Stream Received from ', user?.username);
+          setPeers(prevPeers => ({
+            ...prevPeers,
+            [newPeerId]: { stream: remoteStream, user: user, config: peerConfig }
+          }));
+        });
+        call?.on('close', () => {
+          console.log('Call Closed');
+          setPeers(prevPeers => {
+            const updatedPeers = { ...prevPeers };
+            delete updatedPeers[newPeerId];
+            return updatedPeers;
+          });
+        });
       }
+    });
+    return () => {
+      connection.off('ReceiveMessage');
+      connection.off('SendConnectedUsers');
+      connection.off('UserJoined');
+      connection.off('UserLeft');
+      connection.off('JoinRoomResponse');
+      connection.off('NewPeer');
+      connection.off('ToggleAudio');
+      connection.off('ToggleVideo');
+    };
+  }, [
+    connection,
+    handleReceiveMessage,
+    handleSendConnectedUsers,
+    handleUserJoined,
+    handleUserLeft,
+    handleRoomJoinResponse,
+    peer,
+    localStream,
+    userInfo,
+    config,
+    handleToggleVideo,
+    handleToggleAudio
+  ]);
+  useEffect(() => {
+    return () => {
+      if (peer) {
+        peer.destroy();
+      }
+    };
+  }, []);
+
+  const init = async (config: VideoConfig) => {
+    // Get local media stream
+    try {
+      console.log('Init Called');
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user', // Front or user-facing camera
+          aspectRatio: 4 / 3
+        },
+        audio: true
+      });
+      console.log(config);
+      if (!config.audio) {
+        console.log('Audio Off');
+        stream.getAudioTracks().forEach(track => {
+          track.enabled = false;
+        });
+      }
+      if (!config.video) {
+        console.log('Video Off');
+        stream.getVideoTracks().forEach(track => {
+          track.enabled = false;
+        });
+      }
+      setLocalStream(stream);
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+      const peer = new (await import('peerjs')).default();
+      setPeer(peer);
+      peer.on('open', id => {
+        console.log('Peer Opened', id);
+        console.log('Joining Room');
+        connection?.invoke('JoinVideoRoom', { Room: room.id, User: userInfo }, id, config);
+      });
+      peer.on('call', call => {
+        console.log('Call Received from ', call.metadata.user?.username);
+        call.answer(stream);
+        call.on('stream', remoteStream => {
+          console.log('Stream Received from ', call.metadata.user?.username);
+          setPeers(prevPeers => ({
+            ...prevPeers,
+            [call.peer]: {
+              stream: remoteStream,
+              user: call.metadata.user,
+              config: call.metadata.config
+            }
+          }));
+        });
+      });
+    } catch (error) {
+      console.log(error);
+      setRoomJoining(false);
+      toast.error('Error Joining Room');
+      navigate(webRoutes.home);
+    }
+  };
+
+  const toggleVideo = () => {
+    try {
+      // console.log('Toggling Video', peer?.id, !config.video);
+      connection.invoke('ToggleVideo', peer?.id, !config.video);
+      setConfig({ ...config, video: !config.video });
+      localStream?.getVideoTracks().forEach(track => {
+        track.enabled = !track.enabled;
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const toggleAudio = () => {
+    try {
+      // console.log('Toggling Audio', peer?.id, !config.audio);
+      connection.invoke('ToggleAudio', peer?.id, !config.audio);
+      setConfig({ ...config, audio: !config.audio });
+      localStream?.getAudioTracks().forEach(track => {
+        track.enabled = !track.enabled;
+      });
     } catch (error) {
       console.log(error);
     }
@@ -43,88 +282,81 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
 
   return (
     <>
-      <div className="w-full flex flex-col m-auto h-[calc(100vh-56px)]">
-        <div className='h-[calc(100%-80px)] flex'>
-          <div className='w-full'>
+      <Loader loading={roomJoining} />
+      <div className={`w-full ${roomJoining ? 'hidden' : 'flex'} flex-col m-auto flex-1`}>
+        <div>
+          <div className="w-full">
             {/* Title Header  */}
-            <div onClick={() => setInfoOpen(true)} className="z-10 cursor-pointer flex justify-center items-center py-2 bg-muted sticky top-0 backdrop-blur-lg border-b-[1px]">
-              <h1
-                className="text-2xl font-semibold text-center"
-              >
-                {room.name}
-              </h1>
+            <div
+              onClick={() => setInfoOpen(true)}
+              className="z-10 cursor-pointer flex justify-center items-center py-2 bg-muted sticky top-0 backdrop-blur-lg border-b-[1px]"
+            >
+              <h1 className="text-2xl font-semibold text-center">{room.name}</h1>
             </div>
             {showStartPage ? (
               <StartPage
-                onJoin={async () => {
+                onJoin={async config => {
                   setShowStartPage(false);
+                  setConfig(config);
+                  setRoomJoining(true);
+                  init(config);
                 }}
                 room={room}
               />
             ) : (
               <>
-                {/* Video Area */}
-                <div className="flex flex-wrap justify-center items-center gap-4 h-[70vh] 2xl:h-[80vh] w-full">
-                  <div>
-                    {members.map((member, index) => (
-                      <div key={index}
-                        className={`rounded-lg  relative
-                    ${numVideos == 1 ? 'h-full w-[80%] m-auto' :
-                            numVideos == 2 ? 'w-[calc(50%-1rem)]' :
-                              numVideos >= 3 ? 'w-[calc(50%-1rem)] h-[calc(50%-1rem)]' : ''
-                          }
-                  `}
-                      >
-                        <video
-                          key={index}
-                          ref={(element) => {
-                            localVideoRefs.current[index] = element!;
-                          }}
-                          autoPlay
-                          playsInline
-                          muted// Mute all videos except the first one
-                          className="rounded-lg w-full border-4 border-primary h-full object-cover"
-                        />
-                        <div className="bg-black opacity-30 rounded-full p-1 absolute top-3 right-3 flex items-center space-x-2">
-                          <MicOff size={18} className="text-white" />
-                        </div>
-                        <div className="text-[#fcfbf8] px-2 rounded-full p-1 absolute bottom-1 left-3 flex items-center space-x-2">
-                          <p className='font-bold'>{member?.user?.username}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>)}
+                <VideoGrid localConfig={config} peers={peers} localStream={localStream!} />
+                {/* <VideoGrid peers={{}} localStream={localStream!} /> */}
+              </>
+            )}
           </div>
-          {chatOpen && <MediaChat
-            room={room}
-            setOpen={setChatOpen}
-          />
-          }
         </div>
         {/* Media Controls */}
-        {!showStartPage && <div className="flex items-center justify-center py-4 gap-10">
-          <div onClick={() => setIsMicOn(!isMicOn)} className={`cursor-pointer p-3 rounded-full ${!isMicOn ? 'bg-primary text-white' : 'bg-muted'}`}>
-            {isMicOn ? <Mic /> : <MicOff />}
+        {!showStartPage && (
+          <div className="flex items-center justify-center py-4 gap-10">
+            <div
+              onClick={() => toggleAudio()}
+              className={`cursor-pointer p-3 rounded-full ${
+                !config.audio ? 'bg-primary text-white' : 'bg-muted'
+              }`}
+            >
+              {config.audio ? <Mic /> : <MicOff />}
+            </div>
+            <div
+              onClick={() => toggleVideo()}
+              className={`cursor-pointer p-3 rounded-full ${
+                !config.video ? 'bg-primary text-white' : 'bg-muted'
+              }`}
+            >
+              {config.video ? <Video /> : <VideoOff />}
+            </div>
+            <div
+              onClick={() => setRoomUserOpen(true)}
+              className="relative cursor-pointer p-3 bg-muted rounded-full"
+            >
+              <Users />
+              <span className="bg-secondary rounded-full text-sm px-1 absolute top-0 right-0">
+                {roomUsers.length}
+              </span>
+            </div>
+            <div
+              onClick={() => setChatOpen(!chatOpen)}
+              className={`${
+                chatOpen && 'text-primary'
+              } relative cursor-pointer p-3 bg-muted rounded-full`}
+            >
+              <MessageSquareText />
+              <span className="w-2 h-2 border-white border-[1px] bg-red-500 rounded-full absolute top-3 right-3"></span>
+            </div>
+            <div
+              className={`${infoOpen && 'text-primary'} cursor-pointer p-3 bg-muted rounded-full`}
+              onClick={() => setInfoOpen(!infoOpen)}
+            >
+              <Info />
+            </div>
           </div>
-          <div onClick={() => setIsVideoOn(!isVideoOn)} className={`cursor-pointer p-3 rounded-full ${!isVideoOn ? 'bg-primary text-white' : 'bg-muted'}`}>
-            {isVideoOn ? <Video /> : <VideoOff />}
-          </div>
-          <div className="relative cursor-pointer p-3 bg-muted rounded-full">
-            <Users />
-            <span className='bg-secondary rounded-full text-sm px-1 absolute top-0 right-0'>{members.length}</span>
-          </div>
-          <div onClick={() => setChatOpen(!chatOpen)} className={`${chatOpen && 'text-primary'} relative cursor-pointer p-3 bg-muted rounded-full`}>
-            <MessageSquareText />
-            <span className="w-2 h-2 border-white border-[1px] bg-red-500 rounded-full absolute top-3 right-3"></span>
-          </div>
-          <div className={`${infoOpen && 'text-primary'} cursor-pointer p-3 bg-muted rounded-full`} onClick={() => setInfoOpen(!infoOpen)}>
-            <Info />
-          </div>
-        </div>}
-
-      </div >
+        )}
+      </div>
       <RoomInfo
         setMembers={setMembers}
         room={room}
@@ -132,6 +364,8 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
         open={infoOpen}
         onOpenChange={setInfoOpen}
       />
+      <MediaChat open={chatOpen} messages={messages} room={room} setOpen={setChatOpen} />
+      <RoomUsers open={roomUserOpen} setOpen={setRoomUserOpen} users={roomUsers} />
     </>
   );
 };
