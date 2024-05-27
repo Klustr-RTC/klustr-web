@@ -9,7 +9,7 @@ export class MemberService {
       const { data } = await api.get(apiRoutes.member.getByRoomId(roomId));
       return data as MemberWithUser[];
     } catch (error) {
-      console.log(error);
+      console.log('you are not member of this room');
     }
   };
   static createMember = errorHandler(async (body: CreateMemberType) => {
