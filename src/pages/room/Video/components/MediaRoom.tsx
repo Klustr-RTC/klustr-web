@@ -284,7 +284,7 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
     <>
       <Loader loading={roomJoining} />
       <div className={`w-full ${roomJoining ? 'hidden' : 'flex'} flex-col m-auto flex-1`}>
-        <div>
+        <div className="h-full">
           <div className="w-full">
             {/* Title Header  */}
             <div
@@ -313,7 +313,7 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
         </div>
         {/* Media Controls */}
         {!showStartPage && (
-          <div className="flex items-center justify-center py-4 gap-10">
+          <div className="flex items-center justify-center py-4 sm:gap-10 gap-4">
             <div
               onClick={() => toggleAudio()}
               className={`cursor-pointer p-3 rounded-full ${
