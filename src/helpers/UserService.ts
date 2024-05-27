@@ -10,7 +10,7 @@ export class UserService {
   });
   static updateUser = errorHandler(async (user: User) => {
     const { data } = await api.put(apiRoutes.user.update, user);
-    return data as User;
+    return data;
   });
   static deleteUser = errorHandler(async () => {
     await api.delete(apiRoutes.user.delete);
