@@ -1,7 +1,7 @@
 import { RoomInfo } from '@/components/RoomInfo';
 import { MemberWithUser } from '@/types/member';
 import { Room, VideoConfig } from '@/types/room';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StartPage } from './StartPage';
 import { Info, MessageSquareText, Mic, MicOff, Users, Video, VideoOff } from 'lucide-react';
 import MediaChat from './MediaChat';
@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { webRoutes } from '@/constants/routes';
 import { User } from '@/types/auth';
 import { Message } from '@/types/message';
-import Peer from 'peerjs';
+import Peer, { MediaConnection } from 'peerjs';
 import VideoGrid from './VideoGrid';
 import RoomUsers from './RoomUsers';
 import { Loader } from '@/components/Loader';
@@ -32,7 +32,6 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
   const [chatOpen, setChatOpen] = useState(false);
   const [showStartPage, setShowStartPage] = useState(true);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const localVideoRef = useRef<HTMLVideoElement>(null);
   const [config, setConfig] = useState<VideoConfig>({
     audio: true,
     video: true
@@ -45,6 +44,7 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
   const [peers, setPeers] = useState<{
     [id: string]: { stream: MediaStream; user: User; config: VideoConfig };
   }>({});
+  const [activeCalls, setActiveCalls] = useState<{ [id: string]: MediaConnection }>({});
 
   const handleUserJoined = useCallback(
     async (user: { user: User; room: string }) => {
@@ -80,6 +80,7 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
       const id = Object.keys(updatedPeers).find(id => updatedPeers[id].user.id === user.user.id);
       if (id) {
         delete updatedPeers[id];
+        delete activeCalls[id];
       }
       return updatedPeers;
     });
@@ -133,6 +134,19 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
   }, []);
 
   useEffect(() => {
+    return () => {
+      console.log('Unmounting Media Room');
+      localStream?.getTracks().forEach(track => {
+        console.log('Stopping Track');
+        track.stop();
+      });
+      if (peer) {
+        peer.destroy();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     connection.on('ReceiveMessage', handleReceiveMessage);
     connection.on('SendConnectedUsers', handleSendConnectedUsers);
     connection.on('UserJoined', handleUserJoined);
@@ -148,6 +162,10 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
         const call = peer?.call(newPeerId, localStream!, {
           metadata: { user: userInfo, config: config }
         });
+        if (call) {
+          activeCalls[newPeerId] = call;
+          setActiveCalls(activeCalls);
+        }
         call?.on('stream', remoteStream => {
           console.log('Stream Received from ', user?.username);
           setPeers(prevPeers => ({
@@ -157,6 +175,8 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
         });
         call?.on('close', () => {
           console.log('Call Closed');
+          delete activeCalls[newPeerId];
+          setActiveCalls(activeCalls);
           setPeers(prevPeers => {
             const updatedPeers = { ...prevPeers };
             delete updatedPeers[newPeerId];
@@ -187,15 +207,9 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
     userInfo,
     config,
     handleToggleVideo,
-    handleToggleAudio
+    handleToggleAudio,
+    activeCalls
   ]);
-  useEffect(() => {
-    return () => {
-      if (peer) {
-        peer.destroy();
-      }
-    };
-  }, []);
 
   const init = async (config: VideoConfig) => {
     // Get local media stream
@@ -212,19 +226,18 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
       if (!config.audio) {
         console.log('Audio Off');
         stream.getAudioTracks().forEach(track => {
+          track.stop();
           track.enabled = false;
         });
       }
       if (!config.video) {
         console.log('Video Off');
         stream.getVideoTracks().forEach(track => {
+          track.stop();
           track.enabled = false;
         });
       }
       setLocalStream(stream);
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-      }
       const peer = new (await import('peerjs')).default();
       setPeer(peer);
       peer.on('open', id => {
@@ -235,6 +248,8 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
       peer.on('call', call => {
         console.log('Call Received from ', call.metadata.user?.username);
         call.answer(stream);
+        activeCalls[call.peer] = call;
+        setActiveCalls(activeCalls);
         call.on('stream', remoteStream => {
           console.log('Stream Received from ', call.metadata.user?.username);
           setPeers(prevPeers => ({
@@ -246,6 +261,10 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
             }
           }));
         });
+        call.on('close', () => {
+          delete activeCalls[call.peer]; // Remove the call when it ends
+          setActiveCalls(activeCalls);
+        });
       });
     } catch (error) {
       console.log(error);
@@ -254,15 +273,71 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
       navigate(webRoutes.home);
     }
   };
+  useEffect(() => {
+    return () => {
+      if (localStream) {
+        clearStream(localStream);
+      }
+    };
+  }, []);
+
+  const clearStream = (stream: MediaStream) => {
+    console.log('Clearing Stream');
+    stream.getAudioTracks().forEach(track => {
+      track.stop();
+      track.enabled = false;
+    });
+    stream.getVideoTracks().forEach(track => {
+      track.stop();
+      track.enabled = false;
+    });
+  };
+
+  const changeStreamForAllPeers = async (stream: MediaStream) => {
+    const videoTrack = stream.getVideoTracks()[0];
+    const audioTrack = stream.getAudioTracks()[0];
+    Object.values(activeCalls).forEach(call => {
+      const senders = call.peerConnection.getSenders();
+      senders.forEach(sender => {
+        if (sender.track?.kind === 'video' && videoTrack) {
+          sender.replaceTrack(videoTrack);
+        }
+        if (sender.track?.kind === 'audio' && audioTrack) {
+          sender.replaceTrack(audioTrack);
+        }
+      });
+    });
+  };
 
   const toggleVideo = () => {
     try {
       // console.log('Toggling Video', peer?.id, !config.video);
       connection.invoke('ToggleVideo', peer?.id, !config.video);
+      if (config.video) {
+        console.log('Video Off');
+        localStream?.getVideoTracks().forEach(track => {
+          track.stop();
+          track.enabled = false;
+        });
+      } else {
+        console.log('Video On');
+        navigator.mediaDevices
+          .getUserMedia({
+            video: {
+              facingMode: 'user', // Front or user-facing camera
+              aspectRatio: 4 / 3
+            },
+            audio: config.audio
+          })
+          .then(stream => {
+            if (localStream) {
+              clearStream(localStream);
+            }
+            changeStreamForAllPeers(stream);
+            setLocalStream(stream);
+          });
+      }
       setConfig({ ...config, video: !config.video });
-      localStream?.getVideoTracks().forEach(track => {
-        track.enabled = !track.enabled;
-      });
     } catch (error) {
       console.log(error);
     }
@@ -271,10 +346,33 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
     try {
       // console.log('Toggling Audio', peer?.id, !config.audio);
       connection.invoke('ToggleAudio', peer?.id, !config.audio);
+      if (config.audio) {
+        console.log('Audio Off');
+        localStream?.getAudioTracks().forEach(track => {
+          track.stop();
+          track.enabled = false;
+        });
+      } else {
+        console.log('Audio On');
+        navigator.mediaDevices
+          .getUserMedia({
+            video: config.video
+              ? {
+                  facingMode: 'user', // Front or user-facing camera
+                  aspectRatio: 4 / 3
+                }
+              : false,
+            audio: true
+          })
+          .then(stream => {
+            if (localStream) {
+              clearStream(localStream);
+            }
+            changeStreamForAllPeers(stream);
+            setLocalStream(stream);
+          });
+      }
       setConfig({ ...config, audio: !config.audio });
-      localStream?.getAudioTracks().forEach(track => {
-        track.enabled = !track.enabled;
-      });
     } catch (error) {
       console.log(error);
     }

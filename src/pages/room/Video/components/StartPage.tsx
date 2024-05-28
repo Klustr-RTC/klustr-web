@@ -1,5 +1,5 @@
 import { CustomButton } from '@/components/CustomButton';
-import { Room } from '@/types/room';
+import { Room, VideoConfig } from '@/types/room';
 import { Mic, MicOff, Video, VideoOff } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -16,37 +16,79 @@ export const StartPage = (props: Props) => {
   const [joining, setJoining] = useState(false);
   const [permission, setPermission] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
-  const [, setLocalAudioTrack] = useState<MediaStreamTrack | null>(null);
-  const [localVideoTrack, setLocalVideoTrack] = useState<MediaStreamTrack | null>(null);
+  const [gettingStream, setGettingStream] = useState(false);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
-  const startVideo = async () => {
+  const clearStream = (stream: MediaStream) => {
+    console.log('Clearing Stream');
+    stream.getAudioTracks().forEach(track => {
+      track.stop();
+      track.enabled = false;
+    });
+    stream.getVideoTracks().forEach(track => {
+      track.stop();
+      track.enabled = false;
+    });
+  };
+  const startVideo = async (config: VideoConfig) => {
+    if (gettingStream) {
+      return undefined;
+    }
     try {
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          aspectRatio: 4 / 3
-        },
-        audio: true
+      setGettingStream(true);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: config.video
+          ? {
+              facingMode: 'user',
+              aspectRatio: 4 / 3
+            }
+          : false,
+        audio: config.audio
       });
-      if (!localStream) {
+
+      console.log('getting stream');
+      if (!stream) {
         setPermission(false);
         return;
       }
       setPermission(true);
       if (localVideoRef.current) {
-        localVideoRef.current.srcObject = localStream;
+        localVideoRef.current.srcObject = stream;
         localVideoRef.current.play();
       }
-      setLocalAudioTrack(localStream.getAudioTracks()[0]);
-      setLocalVideoTrack(localStream.getVideoTracks()[0]);
+      if (localStream) {
+        clearStream(localStream);
+      }
+      setLocalStream(stream);
+      setGettingStream(false);
+      return {
+        audio: stream.getAudioTracks()[0],
+        video: stream.getVideoTracks()[0]
+      };
     } catch (error) {
       setPermission(false);
+      setGettingStream(false);
       console.log(error);
     }
   };
   useEffect(() => {
-    startVideo();
-  }, [localVideoRef]);
+    let tracks:
+      | {
+          audio: MediaStreamTrack;
+          video: MediaStreamTrack;
+        }
+      | undefined;
+    startVideo({ audio: true, video: true }).then(res => {
+      tracks = res;
+    });
+
+    return () => {
+      console.log('calling Start page cleanup');
+      console.log(tracks);
+      tracks?.audio.stop();
+      tracks?.video.stop();
+    };
+  }, []);
 
   return (
     <div className="w-full p-4 flex max-sm:flex-col gap-3">
@@ -68,6 +110,18 @@ export const StartPage = (props: Props) => {
         <div className="flex gap-3 items-center justify-center">
           <CustomButton
             onClick={() => {
+              if (config.audio && localStream) {
+                localStream.getAudioTracks().forEach(track => {
+                  console.log('stopping audio track');
+                  track.stop();
+                  track.enabled = false;
+                });
+              } else if (!config.audio) {
+                startVideo({
+                  audio: true,
+                  video: config.video
+                });
+              }
               setConfig({ ...config, audio: !config.audio });
             }}
             size={'icon'}
@@ -79,9 +133,17 @@ export const StartPage = (props: Props) => {
           <CustomButton
             onClick={() => {
               if (config.video) {
-                localVideoTrack?.stop();
-              } else {
-                startVideo();
+                if (localStream) {
+                  localStream.getVideoTracks().forEach(track => {
+                    track.stop();
+                    track.enabled = false;
+                  });
+                }
+              } else if (!config.video) {
+                startVideo({
+                  audio: config.audio,
+                  video: true
+                });
               }
               setConfig({ ...config, video: !config.video });
             }}
@@ -96,6 +158,9 @@ export const StartPage = (props: Props) => {
           disabled={!permission}
           onClick={async () => {
             setJoining(true);
+            if (localStream) {
+              clearStream(localStream);
+            }
             await props.onJoin(config);
             setJoining(false);
           }}
