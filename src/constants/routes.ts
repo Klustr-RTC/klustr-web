@@ -10,6 +10,10 @@ export const webRoutes = {
     create: '/room/create',
     chat: (id: string) => `/room/chat/${id}`,
     media: (id: string) => `/room/media/${id}`
+  },
+  profile: {
+    index: '/profile',
+    edit: '/profile/edit'
   }
 };
 

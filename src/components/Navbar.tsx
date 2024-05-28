@@ -14,7 +14,7 @@ const routes = [
     icon: <Home className="h-5 w-5" />
   },
   {
-    path: '#',
+    path: webRoutes.profile.index,
     name: 'Profile',
     icon: <User className="h-5 w-5" />
   },

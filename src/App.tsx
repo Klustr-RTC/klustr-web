@@ -12,6 +12,8 @@ import { decodeToken } from './utils/token';
 import { ChatRoomPage } from './pages/room/chat/page';
 import { VideoRoomPage } from './pages/room/Video/page';
 import { UserService } from './helpers/UserService';
+import Profile from './pages/profile/page';
+import ProfileEdit from './pages/profile/edit/page';
 
 function App() {
   const { theme } = useTheme();
@@ -63,6 +65,19 @@ function App() {
             {
               path: 'media/:id',
               element: <VideoRoomPage />
+            }
+          ]
+        },
+        {
+          path: 'profile',
+          children: [
+            {
+              path: '',
+              element: <Profile />
+            },
+            {
+              path: 'edit',
+              element: <ProfileEdit />
             }
           ]
         }
