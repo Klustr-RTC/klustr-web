@@ -1,57 +1,110 @@
-## Getting Started
+<div align="center">
+  <img src="https://klustr.netlify.app/tweeps.png" width="100px" style="border-radius:10px;" align="center" >
+  <h1>Klustr</h1>
+  <div align="center" style="display:flex; gap:16px;">
+    <img src="https://img.shields.io/github/languages/top/Klustr-RTC/klustr-web" alt="shields">
+    <img src="https://img.shields.io/github/forks/Klustr-RTC/klustr-web" alt="shields">
+    <img src="https://img.shields.io/github/stars/Klustr-RTC/klustr-web" alt="shields">
+  </div>
+</div>
 
-Follow the steps below to set up and run the project on your local machine:
+## Project Description
 
-1. **Clone the repository:**
-   ```bash
-   git clone [repository-url]
+Klustr is a chat application that allows users to communicate in rooms. Rooms can be public or private. Users can join rooms, send messages, and participate in audio/video chats. The application includes features like message persistence, room management, and profile editing.
 
-2. **Navigate to the project directory:**
-   ```bash
-   cd [project-directory]
+## Prerequisites
 
-3. **Install dependencies:**
-   ```bash
-   npm install
+Before you begin, ensure you have met the following requirements:
 
-4. **Run the application:**
-   ```bash
-   npm start
+- You have installed Node.js and npm.
+- You have a basic understanding of React, Tailwind CSS, .NET, and PostgreSQL.
+- You have a PostgreSQL database setup.
 
-## Branching and Release Strategy
+## Technologies Used
 
-### Git-flow Guidelines
-- Follow the standard Git-flow for development.
-- **Do not commit directly to the main branch.**
-- Always create feature branches for new development.
+- React
+- SignalR
+- WebRTC (peer.js)
+- Tailwind CSS
+- React Router
 
-### Feature Branch Naming Convention
-- Feature branches should follow the format: `<name>/<brief-description>`.
-  For example: `rushi/create-docker-files`.
+## Installation
 
-### Commit Guidelines
-- Commits should be relevant to the task you are working on.
-  For example: "Created Dockerfile for containerization".
+1. Clone the repository:
 
-### Release Branching
-- Release branches should be created from the main branch in this format: `release/vX.X`.
-  For example: `release/v1.0`.
+```sh
+git clone https://github.com/Klustr-RTC/klustr-web.git
+```
 
-### Release Versioning and Tagging
-- Release versions should be created from the release branch with tags in this format: `vX.X.X`.
-  For example: `v1.0.0`.
+2. Navigate to the project directory:
 
-### Hotfix Strategy
-- If there are hotfixes for a particular release, commit to the release branch.
-- Cherry-pick the hotfix commit to the main branch.
-- Create a new release and tag from the release branch in this format: `vX.X.X`.
-  For example: `v1.0.1`.
+```sh
+cd klustr-web
+```
 
-## Pull Request Strategy
+3. Install the dependencies:
 
-- **Do not commit directly to the main branch.**
-- Create feature branches for all development.
-- When creating a Pull Request, add just a Brief Description in title.
-  For example: `Create Docker File`.
-- A Pull Request should be reviewed by at least one individual before merging into the main branch.
+```sh
+npm install
+```
 
+4. Create a `.env.local` file in the root directory and add the environment variables as mentioned in the `vite-env.d.ts` file in `src` directory.
+5. Start the development server:
+
+```sh
+npm run dev
+```
+
+6. Open [http://localhost:5173](http://localhost:5173) in your browser to view the application.
+
+## Features
+
+- **Authentication:**
+
+  - User registration and login with JWT.
+
+- **Room Management:**
+
+  - Create rooms (public or private).
+  - Manage room members and permissions.
+  - Delete rooms created by the user.
+  - Generate shareable links for rooms, which can be regenerated to invalidate the old link.
+
+- **Join Room:**
+
+  - Join rooms from the home page by clicking on room cards and filtering rooms.
+  - Join rooms using a shareable link (no join code required if the link is valid).
+  - Private rooms require a join code for access.
+
+- **Messaging:**
+
+  - Send and receive messages in chat rooms.
+  - Option to save messages to the database or keep them in local storage.
+  - Timestamps displayed for each message using `react-timeago`.
+
+- **Audio/Video Chat:**
+
+  - Join audio/video rooms and interact with other participants.
+  - Enable/disable camera and microphone.
+  - Integrated chat functionality within audio/video rooms.
+  - WebRTC for audio/video communication.
+  - SignalR for real-time communication.
+
+- **Profile Management:**
+
+  - View and edit user profile.
+  - View rooms created by the user.
+
+- **Filtering and Searching:**
+  - Filter rooms based on visibility (public/private), type (chat/audio-video), name, and description.
+
+## Contributors
+
+- [Nilesh9106](https://github.com/Nilesh9106)
+- [Rushi0508](https://github.com/Rushi0508)
+
+## Contact Information
+
+For inquiries or support, please contact:
+
+- [Email](mailto:nileshdarji28200@gmail.com)
