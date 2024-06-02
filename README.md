@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://klustr.netlify.app/tweeps.png" width="100px" style="border-radius:10px;" align="center" >
+  <img src="https://klustr.netlify.app/klustr.png" width="100px" style="border-radius:10px;" align="center" >
   <h1>Klustr</h1>
   <div align="center" style="display:flex; gap:16px;">
     <img src="https://img.shields.io/github/languages/top/Klustr-RTC/klustr-web" alt="shields">
