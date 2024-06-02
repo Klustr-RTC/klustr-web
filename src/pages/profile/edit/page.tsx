@@ -1,11 +1,5 @@
-import React from 'react'
-
 function ProfileEdit() {
-  return (
-    <div>
-
-    </div>
-  )
+  return <div></div>;
 }
 
-export default ProfileEdit
+export default ProfileEdit;
