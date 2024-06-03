@@ -14,7 +14,7 @@ import { VideoRoomPage } from './pages/room/Video/page';
 import { UserService } from './helpers/UserService';
 import Profile from './pages/profile/page';
 import ProfileEdit from './pages/profile/edit/page';
-import Notfound from './pages/not-found/page';
+import Notfound from './components/NotFound';
 
 function App() {
   const { theme } = useTheme();
