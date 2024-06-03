@@ -47,6 +47,9 @@ export const ChatRoom = ({ room, setRoom, members, setMembers }: Props) => {
   };
 
   const deleteMessage = async (id: string) => {
+    if (!room.saveMessages) {
+      return toast.error('Cant delete message in this room as messages are saved.');
+    }
     const token = toast.loading('Deleting Message');
     const res = await MessageService.deleteMessage(id);
     if (res) {
@@ -213,7 +216,12 @@ export const ChatRoom = ({ room, setRoom, members, setMembers }: Props) => {
               <div className="p-4 space-y-5">
                 {messages.map((msg, index) =>
                   msg.user.id == userInfo?.id ? (
-                    <RightMessage onDelete={deleteMessage} key={index} message={msg} />
+                    <RightMessage
+                      showDelete={room.saveMessages}
+                      onDelete={deleteMessage}
+                      key={index}
+                      message={msg}
+                    />
                   ) : (
                     <LeftMessage key={index} message={msg} />
                   )
