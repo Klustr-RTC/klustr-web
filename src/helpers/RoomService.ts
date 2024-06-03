@@ -24,6 +24,10 @@ export class RoomService {
     const { data } = await api.get(apiRoutes.room.getById(roomId));
     return data as Room;
   });
+  static getRoomByLink = errorHandler(async (link: string) => {
+    const { data } = await api.get(apiRoutes.room.getByLink(link));
+    return data as Room;
+  });
   static getAllRooms = errorHandler(async (query?: RoomQueryObject) => {
     const { data } = await api.get(apiRoutes.room.getAll(query));
     return data as Room[];

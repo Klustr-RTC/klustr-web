@@ -20,17 +20,27 @@ import {
 } from './ui/context-menu';
 import { MemberService } from '@/helpers/MemberService';
 import UpdateRoom from './UpdateRoom';
+import { User } from '@/types/auth';
 
 type Props = {
   room: Room;
   setRoom: Dispatch<SetStateAction<Room | undefined>>;
   members: MemberWithUser[];
+  roomUsers?: User[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   setMembers: (members: MemberWithUser[]) => void;
 };
 
-export const RoomInfo = ({ room, members, setRoom, open, onOpenChange, setMembers }: Props) => {
+export const RoomInfo = ({
+  room,
+  members,
+  roomUsers,
+  setRoom,
+  open,
+  onOpenChange,
+  setMembers
+}: Props) => {
   const userInfo = useKlustrStore(state => state.userInfo);
   const [isUpdate, setIsUpdate] = useState(false);
   const [link, setLink] = useState(`${import.meta.env.VITE_WEB_URL}join/${room.shareableLink}/`);
@@ -101,7 +111,7 @@ export const RoomInfo = ({ room, members, setRoom, open, onOpenChange, setMember
                     </CustomButton>
                   </div>
                   {member.isAdmin ? (
-                    <div className='flex items-center gap-4'>
+                    <div className="flex items-center gap-4">
                       <CustomButton
                         loading={linkLoading}
                         variant={'default'}
@@ -110,7 +120,12 @@ export const RoomInfo = ({ room, members, setRoom, open, onOpenChange, setMember
                       >
                         Regenerate Link
                       </CustomButton>
-                      <CustomButton onClick={() => setIsUpdate(true)} size={"sm"} variant={"outline"} className='flex items-center gap-2'>
+                      <CustomButton
+                        onClick={() => setIsUpdate(true)}
+                        size={'sm'}
+                        variant={'outline'}
+                        className="flex items-center gap-2"
+                      >
                         <span>Edit Room Details</span>
                       </CustomButton>
                     </div>
@@ -152,15 +167,30 @@ export const RoomInfo = ({ room, members, setRoom, open, onOpenChange, setMember
                 </div>
               </div>
             )}
+            {roomUsers && (
+              <div className="grid gap-3 my-3">
+                <h2 className="text-xl font-semibold">Live Users</h2>
+                <div className="grid gap-5">
+                  {roomUsers.map(user => (
+                    <div key={user.id} className="flex items-center gap-4">
+                      <Avatar className="hidden h-9 w-9 sm:flex">
+                        <AvatarImage src={user.avatar} alt={user.username} />
+                        <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="grid gap-1">
+                        <p className="text-sm font-medium leading-none">{user.username}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {roomUsers.length === 0 && <p>No Live Users</p>}
+                </div>
+              </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>
-      <UpdateRoom
-        isOpen={isUpdate}
-        setIsOpen={setIsUpdate}
-        roomDetails={room}
-        setRoom={setRoom}
-      />
+      <UpdateRoom isOpen={isUpdate} setIsOpen={setIsUpdate} roomDetails={room} setRoom={setRoom} />
     </>
   );
 };

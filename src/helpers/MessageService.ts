@@ -12,4 +12,9 @@ export class MessageService {
     const res = await api.post(apiRoutes.message.create, message);
     return res.data as Message;
   });
+
+  static deleteMessage = errorHandler(async (id: string) => {
+    await api.delete(apiRoutes.message.delete(id));
+    return true;
+  });
 }

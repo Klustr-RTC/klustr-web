@@ -37,8 +37,9 @@ const CustomVideo: React.FC<VideoProps> = ({ stream, user, isMuted, rows, cols, 
           (width - (width > 640 ? 80 : 0)) / cols - 24
         )
       }}
-      className={`relative rounded-lg flex justify-center items-center h-full ${isMuted || !config.audio ? '' : 'border-2 border-violet-600'
-        }`}
+      className={`relative rounded-lg flex justify-center items-center h-full ${
+        isMuted || !config.audio ? '' : 'border-2 border-violet-600'
+      }`}
     >
       <video
         ref={videoRef}
@@ -51,18 +52,14 @@ const CustomVideo: React.FC<VideoProps> = ({ stream, user, isMuted, rows, cols, 
         </div>
       )}
       {!config.video && (
-        <div>
-          <div className="rounded-lg h-full w-full   flex items-center justify-center dark:bg-neutral-900 bg-neutral-200">
-            <Avatar
-              className={`w-[120px] h-[120px]`}
-            >
-              <AvatarImage src={user?.avatar} className="object-cover overflow-visible" />
-              <AvatarFallback>{user?.username?.slice(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-          </div>
+        <div className="rounded-lg h-full w-full   flex items-center justify-center dark:bg-neutral-900 bg-neutral-200">
+          <Avatar className={`w-[120px] h-[120px]`}>
+            <AvatarImage src={user?.avatar} className="object-cover overflow-visible" />
+            <AvatarFallback>{user?.username?.slice(0, 2).toUpperCase()}</AvatarFallback>
+          </Avatar>
         </div>
       )}
-      <p className='absolute bottom-2 left-2 font-semibold'>{user.username}</p>
+      <p className="absolute bottom-2 left-2 font-semibold">{user.username}</p>
     </div>
   );
 };

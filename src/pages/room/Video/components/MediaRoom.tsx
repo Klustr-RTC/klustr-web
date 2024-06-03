@@ -1,7 +1,7 @@
 import { RoomInfo } from '@/components/RoomInfo';
 import { MemberWithUser } from '@/types/member';
 import { Room, VideoConfig } from '@/types/room';
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { StartPage } from './StartPage';
 import { Info, LogOut, MessageSquareText, Mic, MicOff, Users, Video, VideoOff } from 'lucide-react';
 import MediaChat from './MediaChat';
@@ -47,7 +47,9 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
   const [peers, setPeers] = useState<{
     [id: string]: { stream: MediaStream; user: User; config: VideoConfig };
   }>({});
+  const localStreamRef = useRef<MediaStream | null>(null);
   const [activeCalls, setActiveCalls] = useState<{ [id: string]: MediaConnection }>({});
+  const [hasNewMessages, setHasNewMessages] = useState(false);
 
   const handleUserJoined = useCallback(
     async (user: { user: User; room: string }) => {
@@ -68,13 +70,17 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
     console.log(users);
     setRoomUsers(users);
   }, []);
-  const handleReceiveMessage = useCallback((message: Message) => {
-    console.log(message);
-    if (message.user.id !== userInfo?.id) {
-      toast.success(`${message.user.username} sent: ${message.content}`);
-    }
-    setMessages(prev => [...prev, message]);
-  }, []);
+  const handleReceiveMessage = useCallback(
+    (message: Message) => {
+      console.log(message);
+      if (message.user.id !== userInfo?.id && !chatOpen) {
+        setHasNewMessages(true);
+        toast.success(`${message.user.username} sent: ${message.content}`);
+      }
+      setMessages(prev => [...prev, message]);
+    },
+    [chatOpen, userInfo?.id]
+  );
 
   const handleUserLeft = useCallback((user: { user: User; room: string }, id: string) => {
     toast.success(`${user?.user?.username} left the room`);
@@ -138,19 +144,6 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
       }
       return updatedPeers;
     });
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      console.log('Unmounting Media Room');
-      localStream?.getTracks().forEach(track => {
-        console.log('Stopping Track');
-        track.stop();
-      });
-      if (peer) {
-        peer.destroy();
-      }
-    };
   }, []);
 
   useEffect(() => {
@@ -244,7 +237,13 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
           track.enabled = false;
         });
       }
-      setLocalStream(stream);
+      localStreamRef.current = stream;
+      setLocalStream(prev => {
+        if (prev) {
+          clearStream(prev);
+        }
+        return stream;
+      });
       const peer = new (await import('peerjs')).default();
       setPeer(peer);
       peer.on('open', id => {
@@ -282,22 +281,18 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
   };
   useEffect(() => {
     return () => {
-      if (localStream) {
-        clearStream(localStream);
+      console.log('Unmounting Media Room');
+      const prevStream = localStreamRef.current;
+      if (prevStream) {
+        clearStream(prevStream);
       }
+      localStreamRef.current = null;
+      setLocalStream(null);
     };
   }, []);
-
   const clearStream = (stream: MediaStream) => {
     console.log('Clearing Stream');
-    stream.getAudioTracks().forEach(track => {
-      track.stop();
-      track.enabled = false;
-    });
-    stream.getVideoTracks().forEach(track => {
-      track.stop();
-      track.enabled = false;
-    });
+    stream.getTracks().forEach(track => track.stop());
   };
 
   const changeStreamForAllPeers = async (stream: MediaStream) => {
@@ -337,11 +332,15 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
             audio: config.audio
           })
           .then(stream => {
-            if (localStream) {
-              clearStream(localStream);
-            }
+            if (!stream) return;
+            localStreamRef.current = stream;
             changeStreamForAllPeers(stream);
-            setLocalStream(stream);
+            setLocalStream(prev => {
+              if (prev) {
+                clearStream(prev);
+              }
+              return stream;
+            });
           });
       }
       setConfig({ ...config, video: !config.video });
@@ -365,18 +364,22 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
           .getUserMedia({
             video: config.video
               ? {
-                facingMode: 'user', // Front or user-facing camera
-                aspectRatio: 4 / 3
-              }
+                  facingMode: 'user', // Front or user-facing camera
+                  aspectRatio: 4 / 3
+                }
               : false,
             audio: true
           })
           .then(stream => {
-            if (localStream) {
-              clearStream(localStream);
-            }
+            if (!stream) return;
+            localStreamRef.current = stream;
             changeStreamForAllPeers(stream);
-            setLocalStream(stream);
+            setLocalStream(prev => {
+              if (prev) {
+                clearStream(prev);
+              }
+              return stream;
+            });
           });
       }
       setConfig({ ...config, audio: !config.audio });
@@ -421,15 +424,17 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
           <div className="flex items-center justify-center py-4 sm:gap-10 gap-4">
             <div
               onClick={() => toggleAudio()}
-              className={`cursor-pointer p-3 rounded-full ${!config.audio ? 'bg-primary text-white' : 'bg-muted'
-                }`}
+              className={`cursor-pointer p-3 rounded-full ${
+                !config.audio ? 'bg-primary text-white' : 'bg-muted'
+              }`}
             >
               {config.audio ? <Mic /> : <MicOff />}
             </div>
             <div
               onClick={() => toggleVideo()}
-              className={`cursor-pointer p-3 rounded-full ${!config.video ? 'bg-primary text-white' : 'bg-muted'
-                }`}
+              className={`cursor-pointer p-3 rounded-full ${
+                !config.video ? 'bg-primary text-white' : 'bg-muted'
+              }`}
             >
               {config.video ? <Video /> : <VideoOff />}
             </div>
@@ -443,12 +448,18 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
               </span>
             </div>
             <div
-              onClick={() => setChatOpen(!chatOpen)}
-              className={`${chatOpen && 'text-primary'
-                } relative cursor-pointer p-3 bg-muted rounded-full`}
+              onClick={() => {
+                setChatOpen(!chatOpen);
+                setHasNewMessages(false);
+              }}
+              className={`${
+                chatOpen && 'text-primary'
+              } relative cursor-pointer p-3 bg-muted rounded-full`}
             >
               <MessageSquareText />
-              <span className="w-2 h-2 border-white border-[1px] bg-red-500 rounded-full absolute top-3 right-3"></span>
+              {hasNewMessages && (
+                <span className="w-2 h-2 border-white border-[1px] bg-red-500 rounded-full absolute top-3 right-3"></span>
+              )}
             </div>
             <div
               className={`${infoOpen && 'text-primary'} cursor-pointer p-3 bg-muted rounded-full`}

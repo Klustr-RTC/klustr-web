@@ -14,6 +14,8 @@ import { VideoRoomPage } from './pages/room/Video/page';
 import { UserService } from './helpers/UserService';
 import Profile from './pages/profile/page';
 import Notfound from './components/NotFound';
+import { RoomService } from './helpers/RoomService';
+import RedirectHandler from './pages/join/page';
 
 function App() {
   const { theme } = useTheme();
@@ -76,6 +78,23 @@ function App() {
               element: <Profile />
             }
           ]
+        },
+        {
+          path: 'join/:code',
+          loader: async ({ params }) => {
+            console.log(params);
+            const res = await RoomService.getRoomByLink(params.code!);
+            if (res) {
+              if (res.type == 0) {
+                return { redirect: webRoutes.room.chat(res.id) };
+              } else {
+                return { redirect: webRoutes.room.media(res.id) };
+              }
+            } else {
+              return { redirect: '/notfound' };
+            }
+          },
+          element: <RedirectHandler />
         }
       ]
     },
@@ -98,12 +117,13 @@ function App() {
           element: <Register />
         }
       ]
-    }, {
+    },
+    {
       path: '*',
       element: <Navbar />,
       children: [
         {
-          path: "*",
+          path: '*',
           element: <Notfound />
         }
       ]
