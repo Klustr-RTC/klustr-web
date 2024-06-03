@@ -25,6 +25,8 @@ type Props = {
   setMembers: (members: MemberWithUser[]) => void;
 };
 
+const audio = new Audio('/beep.mp3');
+
 export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
   const userInfo = useKlustrStore(state => state.userInfo);
   const [infoOpen, setInfoOpen] = useState(false);
@@ -50,7 +52,9 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
   const handleUserJoined = useCallback(
     async (user: { user: User; room: string }) => {
       if (userInfo?.id != user.user.id) {
-        toast.success(`${user?.user?.username} join the room`);
+        audio.volume = 0.5;
+        audio.play();
+        toast.success(`${user?.user?.username} joined the room`);
       }
       setRoomUsers(prev => {
         if (prev.find(u => u.id === user?.user?.id)) return prev;
@@ -91,6 +95,8 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
       console.log('No of Users', count);
       if (res === 1) {
         setRoomJoining(false);
+        audio.volume = 0.5;
+        audio.play();
         console.log('Joined Room');
       } else if (res == 2) {
         toast.error('Room Full');
