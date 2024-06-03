@@ -14,6 +14,7 @@ import { VideoRoomPage } from './pages/room/Video/page';
 import { UserService } from './helpers/UserService';
 import Profile from './pages/profile/page';
 import ProfileEdit from './pages/profile/edit/page';
+import Notfound from './components/NotFound';
 
 function App() {
   const { theme } = useTheme();
@@ -102,11 +103,20 @@ function App() {
           element: <Register />
         }
       ]
+    }, {
+      path: '*',
+      element: <Navbar />,
+      children: [
+        {
+          path: "*",
+          element: <Notfound />
+        }
+      ]
     }
   ]);
   return (
     <>
-      <Toaster richColors={true} closeButton position="top-right" theme={theme} />
+      <Toaster richColors={true} duration={1500} closeButton position="top-right" theme={theme} />
       <RouterProvider router={router} />
     </>
   );

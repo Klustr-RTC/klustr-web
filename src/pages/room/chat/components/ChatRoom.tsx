@@ -3,7 +3,7 @@ import useKlustrStore from '@/hooks/store';
 import { MemberWithUser } from '@/types/member';
 import { Message } from '@/types/message';
 import { Room } from '@/types/room';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import RightMessage from '../../components/RightChat';
 import LeftMessage from '../../components/LeftChat';
 import { Input } from '@/components/ui/input';
@@ -21,11 +21,12 @@ import { useNavigate } from 'react-router-dom';
 
 type Props = {
   room: Room;
+  setRoom: Dispatch<SetStateAction<Room | undefined>>;
   members: MemberWithUser[];
   setMembers: (members: MemberWithUser[]) => void;
 };
 
-export const ChatRoom = ({ room, members, setMembers }: Props) => {
+export const ChatRoom = ({ room, setRoom, members, setMembers }: Props) => {
   const [infoOpen, setInfoOpen] = useState(false);
   const userInfo = useKlustrStore(state => state.userInfo);
   const [roomJoining, setRoomJoining] = useState(false);
@@ -124,6 +125,7 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
   }, [joinRoom, connection?.state]);
   useEffect(() => {
     fetchData();
+    scrollToBottom();
   }, [fetchData]);
 
   useEffect(() => {
@@ -175,10 +177,9 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
           className="lg:w-[60%] md:w-[70%] sm:w-[80%] w-full mx-auto flex flex-col"
           style={{ height: 'calc(100dvh - 56px)' }}
         >
-          <div className="flex z-50 justify-center items-center py-2 bg-transparent sticky top-0  backdrop-blur-lg">
+          <div onClick={() => setInfoOpen(true)} className="cursor-pointer flex z-50 justify-center items-center py-2 bg-muted sticky top-0  backdrop-blur-lg">
             <h1
-              onClick={() => setInfoOpen(true)}
-              className="text-2xl cursor-pointer font-semibold text-center"
+              className="text-2xl font-semibold text-center"
             >
               {room.name}
             </h1>
@@ -224,6 +225,7 @@ export const ChatRoom = ({ room, members, setMembers }: Props) => {
       <RoomInfo
         setMembers={setMembers}
         room={room}
+        setRoom={setRoom}
         members={members}
         open={infoOpen}
         onOpenChange={setInfoOpen}

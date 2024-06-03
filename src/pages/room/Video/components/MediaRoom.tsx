@@ -1,9 +1,9 @@
 import { RoomInfo } from '@/components/RoomInfo';
 import { MemberWithUser } from '@/types/member';
 import { Room, VideoConfig } from '@/types/room';
-import { useCallback, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import { StartPage } from './StartPage';
-import { Info, MessageSquareText, Mic, MicOff, Users, Video, VideoOff } from 'lucide-react';
+import { Info, LogOut, MessageSquareText, Mic, MicOff, Users, Video, VideoOff } from 'lucide-react';
 import MediaChat from './MediaChat';
 import useKlustrStore from '@/hooks/store';
 import { useSocket } from '@/hooks/useSocket';
@@ -20,11 +20,12 @@ import { Loader } from '@/components/Loader';
 
 type Props = {
   room: Room;
+  setRoom: Dispatch<SetStateAction<Room | undefined>>;
   members: MemberWithUser[];
   setMembers: (members: MemberWithUser[]) => void;
 };
 
-export const MediaRoom = ({ room, members, setMembers }: Props) => {
+export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
   const userInfo = useKlustrStore(state => state.userInfo);
   const [infoOpen, setInfoOpen] = useState(false);
   const [roomUserOpen, setRoomUserOpen] = useState(false);
@@ -358,9 +359,9 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
           .getUserMedia({
             video: config.video
               ? {
-                  facingMode: 'user', // Front or user-facing camera
-                  aspectRatio: 4 / 3
-                }
+                facingMode: 'user', // Front or user-facing camera
+                aspectRatio: 4 / 3
+              }
               : false,
             audio: true
           })
@@ -414,17 +415,15 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
           <div className="flex items-center justify-center py-4 sm:gap-10 gap-4">
             <div
               onClick={() => toggleAudio()}
-              className={`cursor-pointer p-3 rounded-full ${
-                !config.audio ? 'bg-primary text-white' : 'bg-muted'
-              }`}
+              className={`cursor-pointer p-3 rounded-full ${!config.audio ? 'bg-primary text-white' : 'bg-muted'
+                }`}
             >
               {config.audio ? <Mic /> : <MicOff />}
             </div>
             <div
               onClick={() => toggleVideo()}
-              className={`cursor-pointer p-3 rounded-full ${
-                !config.video ? 'bg-primary text-white' : 'bg-muted'
-              }`}
+              className={`cursor-pointer p-3 rounded-full ${!config.video ? 'bg-primary text-white' : 'bg-muted'
+                }`}
             >
               {config.video ? <Video /> : <VideoOff />}
             </div>
@@ -439,9 +438,8 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
             </div>
             <div
               onClick={() => setChatOpen(!chatOpen)}
-              className={`${
-                chatOpen && 'text-primary'
-              } relative cursor-pointer p-3 bg-muted rounded-full`}
+              className={`${chatOpen && 'text-primary'
+                } relative cursor-pointer p-3 bg-muted rounded-full`}
             >
               <MessageSquareText />
               <span className="w-2 h-2 border-white border-[1px] bg-red-500 rounded-full absolute top-3 right-3"></span>
@@ -452,12 +450,19 @@ export const MediaRoom = ({ room, members, setMembers }: Props) => {
             >
               <Info />
             </div>
+            <div
+              className={`bg-red-600 p-3 rounded-full cursor-pointer hover:bg-red-700`}
+              onClick={() => navigate('/')}
+            >
+              <LogOut />
+            </div>
           </div>
         )}
       </div>
       <RoomInfo
         setMembers={setMembers}
         room={room}
+        setRoom={setRoom}
         members={members}
         open={infoOpen}
         onOpenChange={setInfoOpen}
