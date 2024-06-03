@@ -11,10 +11,7 @@ export const webRoutes = {
     chat: (id: string) => `/room/chat/${id}`,
     media: (id: string) => `/room/media/${id}`
   },
-  profile: {
-    index: '/profile',
-    edit: '/profile/edit'
-  }
+  profile: '/profile'
 };
 
 export const apiRoutes = {

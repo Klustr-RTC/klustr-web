@@ -1,12 +1,13 @@
-import { Home, LogOut, Package2, PanelLeft, Plus, User } from 'lucide-react';
+import { AlignLeft, Home, LogOut, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { ModeToggle } from './mode-toggle';
 import { webRoutes } from '@/constants/routes';
 import { toast } from 'sonner';
 import LogoIcon from './LogoIcon';
+import { useState } from 'react';
 
 const routes = [
   {
@@ -15,7 +16,7 @@ const routes = [
     icon: <Home className="h-5 w-5" />
   },
   {
-    path: webRoutes.profile.index,
+    path: webRoutes.profile,
     name: 'Profile',
     icon: <User className="h-5 w-5" />
   },
@@ -28,6 +29,7 @@ const routes = [
 
 export function Navbar() {
   const navigate = useNavigate();
+  const [sideMenu, setSideMenu] = useState(false);
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -79,24 +81,27 @@ export function Navbar() {
       </aside>
       <div className="flex flex-col  sm:pl-14">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-muted bg-background px-4 sm:static sm:h-auto sm:py-2 sm:bg-background sm:px-6">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button size="icon" variant="outline" className="sm:hidden">
-                <PanelLeft className="h-5 w-5" />
-                <span className="sr-only">Toggle Menu</span>
-              </Button>
-            </SheetTrigger>
+          <Sheet open={sideMenu} onOpenChange={() => setSideMenu(!sideMenu)} >
+            {/* <SheetTrigger asChild> */}
+            <Button onClick={() => setSideMenu(!sideMenu)} size="icon" variant="outline" className="sm:hidden">
+              <AlignLeft />
+              <span className="sr-only">Toggle Menu</span>
+            </Button>
+            {/* </SheetTrigger> */}
             <SheetContent side="left" className="sm:max-w-xs">
               <nav className="grid gap-6 text-lg font-medium">
                 <Link
                   to="#"
                   className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
                 >
-                  <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
+                  <div onClick={() => { setSideMenu(!sideMenu); navigate("/") }}>
+                    <LogoIcon color="white" className="size-6 transition-all group-hover:scale-110" />
+                  </div>
                   <span className="sr-only">Acme Inc</span>
                 </Link>
                 {routes.map((route, index) => (
                   <Link
+                    onClick={() => setSideMenu(false)}
                     to={route.path}
                     key={index}
                     className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -121,6 +126,9 @@ export function Navbar() {
               {' '}
               - Connect and Collaborate in Real-Time.
             </span>
+          </div>
+          <div className='absolute sm:hidden right-2'>
+            <ModeToggle />
           </div>
         </header>
         <main className="items-start px-3 ">

@@ -64,7 +64,7 @@ function Profile() {
         if (resp?.status == 500) {
           return toast.error(resp.data);
         } else {
-          // setUserInfo(resp)
+          setUserInfo(resp)
           toast.success('Avatar updated successfully');
         }
       } else {

@@ -177,7 +177,7 @@ export const ChatRoom = ({ room, setRoom, members, setMembers }: Props) => {
           className="lg:w-[60%] md:w-[70%] sm:w-[80%] w-full mx-auto flex flex-col"
           style={{ height: 'calc(100dvh - 56px)' }}
         >
-          <div onClick={() => setInfoOpen(true)} className="cursor-pointer flex z-50 justify-center items-center py-2 bg-muted sticky top-0  backdrop-blur-lg">
+          <div onClick={() => setInfoOpen(true)} className="cursor-pointer flex z-2 justify-center items-center py-2 bg-muted sticky top-0  backdrop-blur-lg">
             <h1
               className="text-2xl font-semibold text-center"
             >
