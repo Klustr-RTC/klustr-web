@@ -40,10 +40,10 @@ export const apiRoutes = {
       if (query?.description) {
         queryStr += `description=${query.description}&`;
       }
-      if (query?.type) {
+      if (query?.type != undefined) {
         queryStr += `type=${query.type}&`;
       }
-      if (query?.isPublic) {
+      if (query?.isPublic != undefined) {
         queryStr += `isPublic=${query?.isPublic}`;
       }
       return `room/GetAllRooms${queryStr}`;
