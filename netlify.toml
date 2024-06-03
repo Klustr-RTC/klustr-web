@@ -1,5 +1,3 @@
-// netlify.toml
-
 [[redirects]]
 from = "/*"
 to = "/index.html"

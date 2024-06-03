@@ -26,6 +26,7 @@ export const apiRoutes = {
     delete: (roomId: string) => `room/${roomId}`,
     update: (roomId: string) => `room/${roomId}`,
     getByJoinCode: (joinCode: string) => `room/GetRoomByJoinCode/${joinCode}`,
+    getByLink: (link: string) => `room/GetRoomByShareableLink/${link}`,
     getById: (roomId: string) => `room/GetRoomById/${roomId}`,
     generateLink: (roomId: string) => `room/${roomId}/generate-link`,
     getJoinCode: (roomId: string) => `room/${roomId}/GetJoinCode`,
