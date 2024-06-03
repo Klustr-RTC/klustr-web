@@ -35,7 +35,7 @@ export const VideoRoomPage = () => {
         MemberService.getMembersByRoomId(id)
       ]);
 
-      if (res) {
+      if (res && res.type === 1) {
         setRoom(res);
         setMembers(members ?? []);
         if (res.isPublic) {
@@ -46,6 +46,8 @@ export const VideoRoomPage = () => {
             setIsJoinable(true);
           }
         }
+      } else {
+        navigate('/notfound')
       }
     } catch (error) {
       console.log(error);
@@ -74,7 +76,7 @@ export const VideoRoomPage = () => {
         <Loader loading={loading} />
         {!loading ? (
           room && isJoinable ? (
-            <MediaRoom setMembers={setMembers} room={room} members={members} />
+            <MediaRoom setMembers={setMembers} setRoom={setRoom} room={room} members={members} />
           ) : (
             <CheckJoinCode onJoinCode={handleJoinCode} />
           )

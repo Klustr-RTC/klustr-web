@@ -34,7 +34,7 @@ export const ChatRoomPage = () => {
         RoomService.getRoomById(id),
         MemberService.getMembersByRoomId(id)
       ]);
-      if (res) {
+      if (res && res.type === 0) {
         setRoom(res);
         setMembers(members ?? []);
         if (res.isPublic) {
@@ -46,6 +46,8 @@ export const ChatRoomPage = () => {
             setIsJoinable(true);
           }
         }
+      } else {
+        navigate("/notfound")
       }
     } catch (error) {
       console.log(error);
@@ -75,7 +77,7 @@ export const ChatRoomPage = () => {
         <Loader loading={loading} />
         {!loading ? (
           room && isJoinable ? (
-            <ChatRoom setMembers={setMembers} room={room} members={members} />
+            <ChatRoom setMembers={setMembers} setRoom={setRoom} room={room} members={members} />
           ) : (
             <CheckJoinCode onJoinCode={handleJoinCode} />
           )

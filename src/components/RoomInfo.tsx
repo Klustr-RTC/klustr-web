@@ -6,7 +6,7 @@ import { Label } from './ui/label';
 import { Separator } from './ui/separator';
 import { CustomButton } from './CustomButton';
 import { Check, Copy } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import useKlustrStore from '@/hooks/store';
 import { RoomService } from '@/helpers/RoomService';
 import { toast } from 'sonner';
@@ -19,17 +19,20 @@ import {
   ContextMenuTrigger
 } from './ui/context-menu';
 import { MemberService } from '@/helpers/MemberService';
+import UpdateRoom from './UpdateRoom';
 
 type Props = {
   room: Room;
+  setRoom: Dispatch<SetStateAction<Room | undefined>>;
   members: MemberWithUser[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   setMembers: (members: MemberWithUser[]) => void;
 };
 
-export const RoomInfo = ({ room, members, open, onOpenChange, setMembers }: Props) => {
+export const RoomInfo = ({ room, members, setRoom, open, onOpenChange, setMembers }: Props) => {
   const userInfo = useKlustrStore(state => state.userInfo);
+  const [isUpdate, setIsUpdate] = useState(false);
   const [link, setLink] = useState(`${import.meta.env.VITE_WEB_URL}join/${room.shareableLink}/`);
   const [copied, setCopied] = useState(false);
   const [linkLoading, setLinkLoading] = useState(false);
@@ -98,7 +101,7 @@ export const RoomInfo = ({ room, members, open, onOpenChange, setMembers }: Prop
                     </CustomButton>
                   </div>
                   {member.isAdmin ? (
-                    <div>
+                    <div className='flex items-center gap-4'>
                       <CustomButton
                         loading={linkLoading}
                         variant={'default'}
@@ -106,6 +109,9 @@ export const RoomInfo = ({ room, members, open, onOpenChange, setMembers }: Prop
                         size={'sm'}
                       >
                         Regenerate Link
+                      </CustomButton>
+                      <CustomButton onClick={() => setIsUpdate(true)} size={"sm"} variant={"outline"} className='flex items-center gap-2'>
+                        <span>Edit Room Details</span>
                       </CustomButton>
                     </div>
                   ) : null}
@@ -149,6 +155,12 @@ export const RoomInfo = ({ room, members, open, onOpenChange, setMembers }: Prop
           </div>
         </SheetContent>
       </Sheet>
+      <UpdateRoom
+        isOpen={isUpdate}
+        setIsOpen={setIsUpdate}
+        roomDetails={room}
+        setRoom={setRoom}
+      />
     </>
   );
 };
