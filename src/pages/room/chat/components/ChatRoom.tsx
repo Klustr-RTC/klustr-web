@@ -38,12 +38,12 @@ export const ChatRoom = ({ room, setRoom, members, setMembers }: Props) => {
   const [loading, setLoading] = useState(true);
   const [sendMessageLoading, setSendMessageLoading] = useState(false);
   const [content, setContent] = useState('');
-  const [, setRoomUsers] = useState<User[]>([]);
+  const [roomUsers, setRoomUsers] = useState<User[]>([]);
   const { connection } = useSocket();
   const navigate = useNavigate();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
   };
 
   const handleSendMessage = async () => {
@@ -172,7 +172,7 @@ export const ChatRoom = ({ room, setRoom, members, setMembers }: Props) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, roomJoining]);
 
   return (
     <>
@@ -182,12 +182,11 @@ export const ChatRoom = ({ room, setRoom, members, setMembers }: Props) => {
           className="lg:w-[60%] md:w-[70%] sm:w-[80%] w-full mx-auto flex flex-col"
           style={{ height: 'calc(100dvh - 56px)' }}
         >
-          <div onClick={() => setInfoOpen(true)} className="cursor-pointer flex z-2 justify-center items-center py-2 bg-muted sticky top-0  backdrop-blur-lg">
-            <h1
-              className="text-2xl font-semibold text-center"
-            >
-              {room.name}
-            </h1>
+          <div
+            onClick={() => setInfoOpen(true)}
+            className="cursor-pointer flex z-2 justify-center items-center py-2 bg-muted sticky top-0  backdrop-blur-lg"
+          >
+            <h1 className="text-2xl font-semibold text-center">{room.name}</h1>
           </div>
           <Loader loading={loading} />
           <ScrollArea className="flex-1 overflow-y-auto">
@@ -233,6 +232,7 @@ export const ChatRoom = ({ room, setRoom, members, setMembers }: Props) => {
         setRoom={setRoom}
         members={members}
         open={infoOpen}
+        roomUsers={roomUsers}
         onOpenChange={setInfoOpen}
       />
     </>

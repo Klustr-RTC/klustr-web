@@ -18,17 +18,11 @@ export const StartPage = (props: Props) => {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [gettingStream, setGettingStream] = useState(false);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
 
   const clearStream = (stream: MediaStream) => {
     console.log('Clearing Stream');
-    stream.getAudioTracks().forEach(track => {
-      track.stop();
-      track.enabled = false;
-    });
-    stream.getVideoTracks().forEach(track => {
-      track.stop();
-      track.enabled = false;
-    });
+    stream.getTracks().forEach(track => track.stop());
   };
   const startVideo = async (config: VideoConfig) => {
     if (gettingStream) {
@@ -54,17 +48,15 @@ export const StartPage = (props: Props) => {
       setPermission(true);
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
-        localVideoRef.current.play();
       }
-      if (localStream) {
-        clearStream(localStream);
-      }
-      setLocalStream(stream);
+      localStreamRef.current = stream;
+      setLocalStream(prev => {
+        if (prev) {
+          clearStream(prev);
+        }
+        return stream;
+      });
       setGettingStream(false);
-      return {
-        audio: stream.getAudioTracks()[0],
-        video: stream.getVideoTracks()[0]
-      };
     } catch (error) {
       setPermission(false);
       setGettingStream(false);
@@ -72,21 +64,16 @@ export const StartPage = (props: Props) => {
     }
   };
   useEffect(() => {
-    let tracks:
-      | {
-          audio: MediaStreamTrack;
-          video: MediaStreamTrack;
-        }
-      | undefined;
-    startVideo({ audio: true, video: true }).then(res => {
-      tracks = res;
-    });
+    startVideo({ audio: true, video: true });
 
     return () => {
       console.log('calling Start page cleanup');
-      console.log(tracks);
-      tracks?.audio.stop();
-      tracks?.video.stop();
+      const prevStream = localStreamRef.current;
+      if (prevStream) {
+        clearStream(prevStream);
+      }
+      localStreamRef.current = null;
+      setLocalStream(null);
     };
   }, []);
 
@@ -100,7 +87,7 @@ export const StartPage = (props: Props) => {
             </div>
           </div>
         ) : (
-          <video ref={localVideoRef} playsInline muted className="rounded-lg w-full" />
+          <video ref={localVideoRef} autoPlay playsInline muted className="rounded-lg w-full" />
         )}
       </div>
       <div className="sm:w-[40%] w-full  p-3  flex flex-col gap-3">
@@ -112,9 +99,7 @@ export const StartPage = (props: Props) => {
             onClick={() => {
               if (config.audio && localStream) {
                 localStream.getAudioTracks().forEach(track => {
-                  console.log('stopping audio track');
                   track.stop();
-                  track.enabled = false;
                 });
               } else if (!config.audio) {
                 startVideo({
@@ -132,13 +117,10 @@ export const StartPage = (props: Props) => {
           </CustomButton>
           <CustomButton
             onClick={() => {
-              if (config.video) {
-                if (localStream) {
-                  localStream.getVideoTracks().forEach(track => {
-                    track.stop();
-                    track.enabled = false;
-                  });
-                }
+              if (config.video && localStream) {
+                localStream.getVideoTracks().forEach(track => {
+                  track.stop();
+                });
               } else if (!config.video) {
                 startVideo({
                   audio: config.audio,
