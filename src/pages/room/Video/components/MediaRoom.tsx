@@ -388,7 +388,7 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
             {/* Title Header  */}
             <div
               onClick={() => setInfoOpen(true)}
-              className="z-10 cursor-pointer flex justify-center items-center py-2 bg-muted sticky top-0 backdrop-blur-lg border-b-[1px]"
+              className="z-2 cursor-pointer flex justify-center items-center py-2 bg-muted sticky top-0 backdrop-blur-lg border-b-[1px]"
             >
               <h1 className="text-2xl font-semibold text-center">{room.name}</h1>
             </div>
