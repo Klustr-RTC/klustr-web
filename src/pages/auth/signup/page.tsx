@@ -76,6 +76,11 @@ export function Register() {
     if (res) {
       localStorage.setItem('token', res.token);
       toast.success('Registration successful');
+      const link = localStorage.getItem('redirectLink');
+      if (link) {
+        localStorage.removeItem('redirectLink');
+        return navigate(link);
+      }
       navigate(webRoutes.home);
     }
   };
@@ -92,7 +97,6 @@ export function Register() {
     setLoading(false);
   };
 
-
   const onSubmit = async () => {
     try {
       setLoading(true);
@@ -102,6 +106,11 @@ export function Register() {
         if (res) {
           localStorage.setItem('token', res.token);
           toast.success('Registration successful');
+          const link = localStorage.getItem('redirectLink');
+          if (link) {
+            localStorage.removeItem('redirectLink');
+            return navigate(link);
+          }
           navigate(webRoutes.home);
         }
       } else {

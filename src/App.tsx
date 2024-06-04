@@ -26,13 +26,16 @@ function App() {
       element: <Navbar />,
       loader: async () => {
         const token = localStorage.getItem('token');
+        console.log(window.location.pathname);
         if (!token) {
+          localStorage.setItem('redirectLink', window.location.pathname);
           return redirect(webRoutes.auth.login);
         }
         const data = decodeToken(token);
         if (data) {
           if (data.exp! * 1000 < Date.now()) {
             localStorage.removeItem('token');
+            localStorage.setItem('redirectLink', window.location.pathname);
             return redirect(webRoutes.auth.login);
           }
           const user = await UserService.getUserById(data.userId);
@@ -83,6 +86,19 @@ function App() {
           path: 'join/:code',
           loader: async ({ params }) => {
             console.log(params);
+            const token = localStorage.getItem('token');
+            if (!token) {
+              localStorage.setItem('redirectLink', window.location.pathname);
+              return { redirect: webRoutes.auth.login };
+            }
+            const data = decodeToken(token);
+            if (data) {
+              if (data.exp! * 1000 < Date.now()) {
+                localStorage.removeItem('token');
+                localStorage.setItem('redirectLink', window.location.pathname);
+                return { redirect: webRoutes.auth.login };
+              }
+            }
             const res = await RoomService.getRoomByLink(params.code!);
             if (res) {
               if (res.type == 0) {
