@@ -54,7 +54,7 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
   const handleUserJoined = useCallback(
     async (user: { user: User; room: string }) => {
       if (userInfo?.id != user.user.id) {
-        audio.volume = 0.5;
+        audio.volume = 0.8;
         audio.play();
         toast.success(`${user?.user?.username} joined the room`);
       }
@@ -101,7 +101,7 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
       console.log('No of Users', count);
       if (res === 1) {
         setRoomJoining(false);
-        audio.volume = 0.5;
+        audio.volume = 0.8;
         audio.play();
         console.log('Joined Room');
       } else if (res == 2) {
@@ -364,9 +364,9 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
           .getUserMedia({
             video: config.video
               ? {
-                  facingMode: 'user', // Front or user-facing camera
-                  aspectRatio: 4 / 3
-                }
+                facingMode: 'user', // Front or user-facing camera
+                aspectRatio: 4 / 3
+              }
               : false,
             audio: true
           })
@@ -424,17 +424,15 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
           <div className="flex items-center justify-center py-4 sm:gap-10 gap-4">
             <div
               onClick={() => toggleAudio()}
-              className={`cursor-pointer p-3 rounded-full ${
-                !config.audio ? 'bg-primary text-white' : 'bg-muted'
-              }`}
+              className={`cursor-pointer p-3 rounded-full ${!config.audio ? 'bg-primary text-white' : 'bg-muted'
+                }`}
             >
               {config.audio ? <Mic /> : <MicOff />}
             </div>
             <div
               onClick={() => toggleVideo()}
-              className={`cursor-pointer p-3 rounded-full ${
-                !config.video ? 'bg-primary text-white' : 'bg-muted'
-              }`}
+              className={`cursor-pointer p-3 rounded-full ${!config.video ? 'bg-primary text-white' : 'bg-muted'
+                }`}
             >
               {config.video ? <Video /> : <VideoOff />}
             </div>
@@ -452,9 +450,8 @@ export const MediaRoom = ({ room, setRoom, members, setMembers }: Props) => {
                 setChatOpen(!chatOpen);
                 setHasNewMessages(false);
               }}
-              className={`${
-                chatOpen && 'text-primary'
-              } relative cursor-pointer p-3 bg-muted rounded-full`}
+              className={`${chatOpen && 'text-primary'
+                } relative cursor-pointer p-3 bg-muted rounded-full`}
             >
               <MessageSquareText />
               {hasNewMessages && (
