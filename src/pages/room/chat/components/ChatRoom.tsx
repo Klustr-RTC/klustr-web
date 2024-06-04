@@ -82,7 +82,7 @@ export const ChatRoom = ({ room, setRoom, members, setMembers }: Props) => {
   const handleUserJoined = useCallback(
     async (user: { user: User; room: string }) => {
       if (userInfo?.id != user.user.id) {
-        audio.volume = 0.5;
+        audio.volume = 0.8;
         audio.play();
         toast.success(`${user?.user?.username} joined the room`);
       }
@@ -160,7 +160,7 @@ export const ChatRoom = ({ room, setRoom, members, setMembers }: Props) => {
     connection.on('JoinRoomResponse', (res: number, count: number) => {
       console.log('No of Users', count);
       if (res === 1) {
-        audio.volume = 0.5;
+        audio.volume = 0.8;
         audio.play();
         setJoined(true);
       } else if (res == 2) {
