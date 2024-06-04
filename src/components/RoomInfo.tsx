@@ -110,7 +110,7 @@ export const RoomInfo = ({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="w-[400px] sm:w-[540px]">
+        <SheetContent className="w-[400px] overflow-auto sm:w-[540px]">
           <SheetHeader>
             <SheetTitle>{room.name}</SheetTitle>
             <SheetDescription>{room.description}</SheetDescription>

@@ -54,11 +54,17 @@ export function Login() {
     });
     if (res) {
       localStorage.setItem('token', res.token);
+      const link = localStorage.getItem('redirectLink');
+      if (link) {
+        localStorage.removeItem('redirectLink');
+        navigate(link);
+        return;
+      }
       toast.success('Login successful');
       navigate(webRoutes.home);
     }
   };
-    
+
   const onSubmit = async () => {
     try {
       setLoading(true);
@@ -68,6 +74,11 @@ export function Login() {
         if (res) {
           localStorage.setItem('token', res.token);
           toast.success('Login successful');
+          const link = localStorage.getItem('redirectLink');
+          if (link) {
+            localStorage.removeItem('redirectLink');
+            return navigate(link);
+          }
           navigate(webRoutes.home);
         }
       } else {
