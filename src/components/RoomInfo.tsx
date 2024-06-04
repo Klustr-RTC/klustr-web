@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Separator } from './ui/separator';
 import { CustomButton } from './CustomButton';
-import { Check, Copy, Loader, Trash2 } from 'lucide-react';
+import { Check, Copy, Loader, Plus, Trash2 } from 'lucide-react';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import useKlustrStore from '@/hooks/store';
 import { RoomService } from '@/helpers/RoomService';
@@ -22,6 +22,7 @@ import { MemberService } from '@/helpers/MemberService';
 import UpdateRoom from './UpdateRoom';
 import { User } from '@/types/auth';
 import { useNavigate } from 'react-router-dom';
+import AddMember from './AddMember';
 
 type Props = {
   room: Room;
@@ -49,6 +50,7 @@ export const RoomInfo = ({
   const [linkLoading, setLinkLoading] = useState(false);
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [memberOpen, setMemberOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -87,15 +89,15 @@ export const RoomInfo = ({
       setDeleting(true);
       const res = await RoomService.deleteRoom(room.id);
       if (res) {
-        toast.success("Room deleted successfully");
-        navigate("/");
+        toast.success('Room deleted successfully');
+        navigate('/');
       }
     } catch (e) {
-      toast.error("Something went wrong");
+      toast.error('Something went wrong');
     } finally {
       setDeleting(false);
     }
-  }
+  };
 
   useEffect(() => {
     const m = members.find(member => member.user.id === userInfo?.id) ?? null;
@@ -112,14 +114,18 @@ export const RoomInfo = ({
           <SheetHeader>
             <SheetTitle>{room.name}</SheetTitle>
             <SheetDescription>{room.description}</SheetDescription>
-            {member?.isAdmin && <div className='flex justify-center'>
-              <CustomButton onClick={deleteRoom} className='flex items-center gap-1' variant={"destructive"}>
-                {
-                  deleting ? <Loader className='animate-spin' size={20} /> : <Trash2 size={20} />
-                }
-                Delete Room
-              </CustomButton>
-            </div>}
+            {member?.isAdmin && (
+              <div className="flex justify-center">
+                <CustomButton
+                  onClick={deleteRoom}
+                  className="flex items-center gap-1"
+                  variant={'destructive'}
+                >
+                  {deleting ? <Loader className="animate-spin" size={20} /> : <Trash2 size={20} />}
+                  Delete Room
+                </CustomButton>
+              </div>
+            )}
           </SheetHeader>
           <Separator className="my-4" />
           <div className="grid gap-3">
@@ -173,7 +179,18 @@ export const RoomInfo = ({
             ) : null}
             {members.length > 0 && (
               <div className="grid gap-3">
-                <h2 className="text-xl font-semibold">Members</h2>
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-semibold">Members</h2>
+                  {room.createdBy == userInfo?.id && (
+                    <CustomButton
+                      onClick={() => setMemberOpen(true)}
+                      size={'icon'}
+                      variant={'ghost'}
+                    >
+                      <Plus size={18} />
+                    </CustomButton>
+                  )}
+                </div>
                 <div className="grid gap-8">
                   {members.map(m => (
                     <MemberCard
@@ -218,6 +235,15 @@ export const RoomInfo = ({
           </div>
         </SheetContent>
       </Sheet>
+      <AddMember
+        onAddMember={m => {
+          setMembers([...members, m]);
+        }}
+        isOpen={memberOpen}
+        setIsOpen={setMemberOpen}
+        members={members}
+        room={room}
+      />
       <UpdateRoom isOpen={isUpdate} setIsOpen={setIsUpdate} roomDetails={room} setRoom={setRoom} />
     </>
   );

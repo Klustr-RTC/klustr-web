@@ -57,6 +57,7 @@ export const apiRoutes = {
   },
   user: {
     getById: (userId: string) => `user/${userId}`,
+    find: (query: string) => `user/FindUsers/${query}`,
     update: `user`,
     delete: 'user'
   },

@@ -16,4 +16,8 @@ export class UserService {
     await api.delete(apiRoutes.user.delete);
     return true;
   });
+  static findUsers = errorHandler(async (query: string) => {
+    const { data } = await api.get(apiRoutes.user.find(query));
+    return data as User[];
+  });
 }
