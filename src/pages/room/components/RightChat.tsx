@@ -20,7 +20,7 @@ const RightMessage = (props: Props) => {
         <ContextMenuTrigger>
           <div className="grid gap-2">
             <div className="bg-primary grid gap-1 text-primary-foreground backdrop-blur-lg   py-1 px-4 rounded-l-lg rounded-br-lg">
-              <p className="text-sm">{props.message.content}</p>
+              <p className="text-sm select-none">{props.message.content}</p>
               <span className="text-xs dark:text-foreground text-primary-foreground leading-none text-right float-right">
                 <ReactTimeago date={props.message.timeStamp} />
               </span>

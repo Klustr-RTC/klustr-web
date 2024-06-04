@@ -14,7 +14,7 @@ export class MemberService {
   };
   static createMember = errorHandler(async (body: CreateMemberType) => {
     const { data } = await api.post(apiRoutes.member.create, body);
-    return data as Member;
+    return data as MemberWithUser;
   });
   static makeAdmin = errorHandler(async (memberId: string) => {
     const { data } = await api.put(apiRoutes.member.update(memberId), { isAdmin: true });
