@@ -8,7 +8,7 @@
   </div>
 </div>
 
-#### [Live Site](https://klustr.netlify.app) | [Youtube Video](https://www.youtube.com/watch?v=KGh4CIZ1KHo)
+#### [Live Site](https://klustr.netlify.app) | [Youtube Video](https://www.youtube.com/watch?v=KGh4CIZ1KHo) | [Backend](https://github.com/Klustr-RTC/klustr-api)
 
 ## Project Description
 
@@ -102,8 +102,9 @@ npm run dev
 
 ## Contributors
 
-- [Nilesh9106](https://github.com/Nilesh9106)
-- [Rushi0508](https://github.com/Rushi0508)
+<a href="https://github.com/Klustr-RTC/klustr-web/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Klustr-RTC/klustr-web" />
+</a>
 
 ## Contact Information
 
