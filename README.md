@@ -8,6 +8,8 @@
   </div>
 </div>
 
+#### [Live Site](https://klustr.netlify.app) | [Youtube Video](https://www.youtube.com/watch?v=KGh4CIZ1KHo)
+
 ## Project Description
 
 Klustr is a chat application that allows users to communicate in rooms. Rooms can be public or private. Users can join rooms, send messages, and participate in audio/video chats. The application includes features like message persistence, room management, and profile editing.
