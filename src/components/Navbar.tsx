@@ -1,4 +1,4 @@
-import { AlignLeft, Home, LogOut, Plus, User } from 'lucide-react';
+import { AlignLeft, Globe, Home, LogOut, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -24,6 +24,11 @@ const routes = [
     path: webRoutes.room.create,
     name: 'Create Room',
     icon: <Plus className="h-5 w-5" />
+  },
+  {
+    path: webRoutes.connect,
+    name: 'Chat with random',
+    icon: <Globe className='h-5 w-5' />
   }
 ];
 
@@ -131,7 +136,7 @@ export function Navbar() {
             <ModeToggle />
           </div>
         </header>
-        <main className="items-start px-3 ">
+        <main className="items-start px-3">
           <Outlet />
         </main>
       </div>
