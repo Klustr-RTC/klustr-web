@@ -30,7 +30,7 @@ function Chat({ messages, sendMessage }: Props) {
 
   useEffect(() => {
     scrollToBottom();
-  }, []);
+  }, [messages]);
   return (
     <div className="w-full flex flex-col flex-1">
       <ScrollArea className="flex-1 overflow-y-auto">

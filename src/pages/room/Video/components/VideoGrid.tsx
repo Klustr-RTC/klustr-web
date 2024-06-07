@@ -51,6 +51,9 @@ const CustomVideo: React.FC<VideoProps> = ({ stream, user, isMuted, rows, cols, 
       <video
         ref={videoRef}
         muted={isMuted || !config.audio}
+        onContextMenu={e => {
+          e.preventDefault();
+        }}
         className={`${
           config.video && stream && loaded ? '' : 'hidden'
         } rounded-lg h-full w-full object-cover`}

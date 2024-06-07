@@ -32,7 +32,7 @@ function ChatSheet({ open, setOpen, messages, Send }: Props) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, open]);
   return (
     <>
       <Sheet open={open} onOpenChange={setOpen}>

@@ -145,6 +145,7 @@ function RandomRoom() {
     remoteCall?.close();
     setRemoteCall(null);
     setRemoteUser(null);
+    setMessages([]);
   }, [config, connection, peer?.id, remoteCall]);
 
   const handleRandomUserJoined = useCallback(
@@ -163,6 +164,7 @@ function RandomRoom() {
           console.log('Call Closed');
           setRemoteCall(null);
           setRemoteUser(null);
+          setMessages([]);
         });
       }
     },
@@ -305,6 +307,7 @@ function RandomRoom() {
         call.on('close', () => {
           setRemoteCall(null);
           setRemoteUser(null);
+          setMessages([]);
         });
       });
     } catch (error) {
@@ -321,6 +324,7 @@ function RandomRoom() {
     remoteCall?.close();
     setRemoteCall(null);
     setRemoteUser(null);
+    setMessages([]);
   };
 
   const sendMessage = (content: string) => {
@@ -335,7 +339,7 @@ function RandomRoom() {
     ]);
   };
   return isStarted ? (
-    <div className="flex h-[calc(100vh-60px)]">
+    <div className="flex flex-1">
       <div className="lg:w-[500px] max-lg:w-full flex flex-col gap-1">
         <div className="h-1/2 relative">
           <div className="absolute z-40 top-2 left-4">
@@ -373,7 +377,7 @@ function RandomRoom() {
             <div
               onClick={() => skipUser()}
               className={`cursor-pointer p-2 ${
-                !remoteCall || !remoteUser ? 'opacity-80' : ''
+                !remoteCall || !remoteUser ? 'opacity-50' : ''
               } rounded-full bg-primary text-white`}
             >
               <SkipForward size={22} />

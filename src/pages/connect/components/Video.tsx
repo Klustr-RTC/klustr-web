@@ -36,6 +36,9 @@ const Video = ({ stream, user, isMuted, config }: VideoProps) => {
     >
       <video
         ref={videoRef}
+        onContextMenu={e => {
+          e.preventDefault();
+        }}
         muted={isMuted || !config.audio}
         className={`${config.video && stream && loaded ? '' : 'hidden'} h-full w-full object-cover`}
       />
