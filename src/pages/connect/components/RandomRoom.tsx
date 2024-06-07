@@ -339,7 +339,7 @@ function RandomRoom() {
     ]);
   };
   return isStarted ? (
-    <div className="flex flex-1">
+    <div className="flex h-[calc(100dvh-60px)]">
       <div className="lg:w-[500px] max-lg:w-full flex flex-col gap-1">
         <div className="h-1/2 relative">
           <div className="absolute z-40 top-2 left-4">
