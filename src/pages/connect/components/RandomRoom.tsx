@@ -388,7 +388,7 @@ function RandomRoom() {
               }}
               className={`${
                 chatOpen && 'text-primary'
-              } relative md:hidden cursor-pointer p-3 bg-muted rounded-full`}
+              } relative lg:hidden cursor-pointer p-3 bg-muted rounded-full`}
             >
               <MessageSquareText />
             </div>
