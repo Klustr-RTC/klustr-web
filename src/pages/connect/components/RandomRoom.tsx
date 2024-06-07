@@ -169,7 +169,7 @@ function RandomRoom() {
     [config, localStream, peer, userInfo]
   );
   const handleToggleVideo = useCallback(
-    (peer: string, isVideoOn: boolean) => {
+    (_peer: string, isVideoOn: boolean) => {
       if (remoteUser) {
         remoteUser.stream.getVideoTracks().forEach(track => {
           track.enabled = isVideoOn;
@@ -180,7 +180,7 @@ function RandomRoom() {
     [remoteUser]
   );
   const handleToggleAudio = useCallback(
-    (peer: string, isAudioOn: boolean) => {
+    (_peer: string, isAudioOn: boolean) => {
       if (remoteUser) {
         remoteUser.stream.getAudioTracks().forEach(track => {
           track.enabled = isAudioOn;
