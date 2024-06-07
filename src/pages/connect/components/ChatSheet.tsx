@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RandomMessage } from '@/types/message';
 import { CustomButton } from '@/components/CustomButton';
-import useKlustrStore from '@/hooks/store';
 import {
   Sheet,
   SheetContent,
@@ -18,22 +17,17 @@ interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
   messages: RandomMessage[];
+  Send: (content: string) => void;
 }
 
-function ChatSheet({ open, setOpen, messages }: Props) {
+function ChatSheet({ open, setOpen, messages, Send }: Props) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
-  const userInfo = useKlustrStore(state => state.userInfo);
 
   // Function to scroll to the bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const Send = async () => {
-    setLoading(true);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -62,7 +56,10 @@ function ChatSheet({ open, setOpen, messages }: Props) {
               onChange={e => setContent(e.target.value)}
               onKeyDown={e => {
                 if (e.key === 'Enter') {
-                  Send();
+                  setLoading(true);
+                  Send(content);
+                  setContent('');
+                  setLoading(false);
                 }
               }}
               className="py-5 flex-1"
@@ -70,7 +67,12 @@ function ChatSheet({ open, setOpen, messages }: Props) {
               value={content}
             />
             <CustomButton
-              onClick={Send}
+              onClick={() => {
+                setLoading(true);
+                Send(content);
+                setContent('');
+                setLoading(false);
+              }}
               variant={'outline'}
               className="size-10"
               size={'icon'}
