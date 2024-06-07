@@ -56,6 +56,7 @@ function ChatSheet({ open, setOpen, messages, Send }: Props) {
               onChange={e => setContent(e.target.value)}
               onKeyDown={e => {
                 if (e.key === 'Enter') {
+                  if (content.trim() == '') return;
                   setLoading(true);
                   Send(content);
                   setContent('');
@@ -68,6 +69,7 @@ function ChatSheet({ open, setOpen, messages, Send }: Props) {
             />
             <CustomButton
               onClick={() => {
+                if (content.trim() == '') return;
                 setLoading(true);
                 Send(content);
                 setContent('');
