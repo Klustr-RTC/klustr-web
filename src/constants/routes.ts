@@ -11,6 +11,7 @@ export const webRoutes = {
     chat: (id: string) => `/room/chat/${id}`,
     media: (id: string) => `/room/media/${id}`
   },
+  connect: '/connect',
   profile: '/profile'
 };
 

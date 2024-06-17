@@ -1,8 +1,8 @@
-import { Message } from '@/types/message';
+import { Message, RandomMessage } from '@/types/message';
 import ReactTimeago from 'react-timeago';
 
 type Props = {
-  message: Message;
+  message: Message | RandomMessage;
 };
 
 const LeftMessage = (props: Props) => {

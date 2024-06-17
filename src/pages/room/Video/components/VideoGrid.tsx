@@ -17,12 +17,19 @@ type VideoProps = {
 
 const CustomVideo: React.FC<VideoProps> = ({ stream, user, isMuted, rows, cols, config }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [loaded, setLoaded] = useState(false);
   const { height, width } = useWindowDimensions();
   useEffect(() => {
     const play = async () => {
-      if (videoRef.current && stream) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+      try {
+        if (videoRef.current && stream) {
+          setLoaded(false);
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+          setLoaded(true);
+        }
+      } catch (error) {
+        setLoaded(true);
       }
     };
     play();
@@ -44,14 +51,19 @@ const CustomVideo: React.FC<VideoProps> = ({ stream, user, isMuted, rows, cols, 
       <video
         ref={videoRef}
         muted={isMuted || !config.audio}
-        className={`${config.video ? '' : 'hidden'} rounded-lg h-full w-full object-cover`}
+        onContextMenu={e => {
+          e.preventDefault();
+        }}
+        className={`${
+          config.video && stream && loaded ? '' : 'hidden'
+        } rounded-lg h-full w-full object-cover`}
       />
       {!config.audio && (
         <div className="bg-black opacity-30 z-50 rounded-full p-1 absolute top-3 right-3 flex items-center space-x-2">
           <MicOff size={18} className="text-white" />
         </div>
       )}
-      {!config.video && (
+      {(!config.video || !stream || !loaded) && (
         <div className="rounded-lg h-full w-full   flex items-center justify-center dark:bg-neutral-900 bg-neutral-200">
           <Avatar className={`w-[120px] h-[120px]`}>
             <AvatarImage src={user?.avatar} className="object-cover overflow-visible" />

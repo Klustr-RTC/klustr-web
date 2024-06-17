@@ -9,6 +9,12 @@ export type Message = {
   timeStamp: string;
 };
 
+export type RandomMessage = {
+  content: string;
+  user: User;
+  timeStamp: string;
+};
+
 export type MessageForm = {
   content: string;
   userId: string;

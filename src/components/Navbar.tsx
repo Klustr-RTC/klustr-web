@@ -1,4 +1,4 @@
-import { AlignLeft, Home, LogOut, Plus, User } from 'lucide-react';
+import { AlignLeft, Globe, Home, LogOut, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -24,6 +24,11 @@ const routes = [
     path: webRoutes.room.create,
     name: 'Create Room',
     icon: <Plus className="h-5 w-5" />
+  },
+  {
+    path: webRoutes.connect,
+    name: 'Chat with random',
+    icon: <Globe className="h-5 w-5" />
   }
 ];
 
@@ -38,7 +43,7 @@ export function Navbar() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/20">
+    <div className="flex min-h-dvh w-full flex-col bg-muted/20">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r border-muted bg-background sm:flex">
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-4">
           <Link
@@ -79,11 +84,16 @@ export function Navbar() {
           </Tooltip>
         </nav>
       </aside>
-      <div className="flex flex-col  sm:pl-14">
+      <div className="flex flex-col sm:pl-14">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-muted bg-background px-4 sm:static sm:h-auto sm:py-2 sm:bg-background sm:px-6">
-          <Sheet open={sideMenu} onOpenChange={() => setSideMenu(!sideMenu)} >
+          <Sheet open={sideMenu} onOpenChange={() => setSideMenu(!sideMenu)}>
             {/* <SheetTrigger asChild> */}
-            <Button onClick={() => setSideMenu(!sideMenu)} size="icon" variant="outline" className="sm:hidden">
+            <Button
+              onClick={() => setSideMenu(!sideMenu)}
+              size="icon"
+              variant="outline"
+              className="sm:hidden"
+            >
               <AlignLeft />
               <span className="sr-only">Toggle Menu</span>
             </Button>
@@ -94,8 +104,16 @@ export function Navbar() {
                   to="#"
                   className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
                 >
-                  <div onClick={() => { setSideMenu(!sideMenu); navigate("/") }}>
-                    <LogoIcon color="white" className="size-6 transition-all group-hover:scale-110" />
+                  <div
+                    onClick={() => {
+                      setSideMenu(!sideMenu);
+                      navigate('/');
+                    }}
+                  >
+                    <LogoIcon
+                      color="white"
+                      className="size-6 transition-all group-hover:scale-110"
+                    />
                   </div>
                   <span className="sr-only">Acme Inc</span>
                 </Link>
@@ -127,11 +145,11 @@ export function Navbar() {
               - Connect and Collaborate in Real-Time.
             </span>
           </div>
-          <div className='absolute sm:hidden right-2'>
+          <div className="absolute sm:hidden right-2">
             <ModeToggle />
           </div>
         </header>
-        <main className="items-start px-3 ">
+        <main className="px-3">
           <Outlet />
         </main>
       </div>

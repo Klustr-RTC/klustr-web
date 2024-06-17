@@ -4,12 +4,12 @@ import {
   ContextMenuItem,
   ContextMenuTrigger
 } from '@/components/ui/context-menu';
-import { Message } from '@/types/message';
+import { Message, RandomMessage } from '@/types/message';
 import ReactTimeago from 'react-timeago';
 
 type Props = {
-  message: Message;
-  onDelete: (id: string) => void;
+  message: Message | RandomMessage;
+  onDelete?: (id: string) => void;
   showDelete?: boolean;
 };
 
@@ -30,7 +30,7 @@ const RightMessage = (props: Props) => {
         <ContextMenuContent>
           <ContextMenuItem
             onClick={() => {
-              props.onDelete(props.message.id);
+              props?.onDelete!((props.message as Message).id);
             }}
           >
             Delete

@@ -16,6 +16,7 @@ import Profile from './pages/profile/page';
 import Notfound from './components/NotFound';
 import { RoomService } from './helpers/RoomService';
 import RedirectHandler from './pages/join/page';
+import RandomConnect from './pages/connect/RandomConnect';
 
 function App() {
   const { theme } = useTheme();
@@ -79,6 +80,15 @@ function App() {
             {
               path: '',
               element: <Profile />
+            }
+          ]
+        },
+        {
+          path: 'connect',
+          children: [
+            {
+              path: '',
+              element: <RandomConnect />
             }
           ]
         },
